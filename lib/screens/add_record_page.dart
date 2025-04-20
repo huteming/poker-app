@@ -44,12 +44,14 @@ class _AddRecordPageState extends State<AddRecordPage> {
         selectedPlayers,
         bombScores,
       );
+      final recordTime = DateTime.now();
 
       // 返回完整的记录信息
       Navigator.of(context).pop({
         'scores': scores,
         'bombScores': bombScores,
         'gameType': selectedScoreType,
+        'recordTime': recordTime,
       });
     } catch (e) {
       ScaffoldMessenger.of(

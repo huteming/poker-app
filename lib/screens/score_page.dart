@@ -21,7 +21,7 @@ class _ScorePageState extends State<ScorePage> {
   void _showGameDetail(BuildContext context, int roundIndex) {
     final record = GameRecord(
       roundNumber: roundIndex + 1,
-      playedAt: DateTime.now(),
+      playedAt: players[0].recordTimes[roundIndex],
       gameType: players[0].gameTypes[roundIndex],
       winners: [
         PlayerGameRecord(
@@ -65,6 +65,7 @@ class _ScorePageState extends State<ScorePage> {
       final scores = result['scores'] as Map<String, int>;
       final bombScores = result['bombScores'] as Map<String, int>;
       final gameType = result['gameType'] as String;
+      final recordTime = result['recordTime'] as DateTime;
 
       setState(() {
         // 更新每个玩家的分数记录
@@ -74,6 +75,7 @@ class _ScorePageState extends State<ScorePage> {
               scores[player.name]!,
               bombCount: bombScores[player.name] ?? 0,
               gameType: gameType,
+              recordTime: recordTime,
             );
           }
         }
