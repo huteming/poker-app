@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-import '../models/player.dart';
-import '../services/player_service.dart';
+import '../models/db_player.dart';
+import '../database/player_dao.dart';
 
 class PlayerSelectionList extends StatefulWidget {
   final List<Player> selectedPlayers;
   final Function(List<Player>) onPlayersSelected;
 
   const PlayerSelectionList({
-    Key? key,
+    super.key,
     required this.selectedPlayers,
     required this.onPlayersSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<PlayerSelectionList> createState() => _PlayerSelectionListState();
 }
 
 class _PlayerSelectionListState extends State<PlayerSelectionList> {
-  final PlayerService _playerService = PlayerService();
+  final PlayerDao _playerDao = PlayerDao();
   List<Player> _players = [];
   bool _isLoading = true;
 
@@ -33,7 +33,7 @@ class _PlayerSelectionListState extends State<PlayerSelectionList> {
     });
 
     try {
-      final players = await _playerService.getAllPlayers();
+      final players = await _playerDao.findAll();
       setState(() {
         _players = players;
       });
@@ -111,7 +111,7 @@ class _PlayerSelectionListState extends State<PlayerSelectionList> {
                       backgroundColor:
                           isSelected ? Colors.purple : Colors.grey[300],
                       child: Text(
-                        player.avatarText,
+                        player.avatar,
                         style: TextStyle(
                           color: isSelected ? Colors.white : Colors.black,
                           fontWeight:

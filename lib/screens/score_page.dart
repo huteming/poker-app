@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/player.dart';
+import '../models/db_player.dart';
 import '../models/player_score.dart';
 import '../models/game_record.dart';
 import '../widgets/score_table_row.dart';
@@ -159,7 +159,7 @@ class _ScorePageState extends State<ScorePage> {
                               name: player.name,
                               winRate: 0.0,
                               scores: [],
-                              avatarText: player.avatarText,
+                              avatarText: player.avatar,
                             ),
                           )
                           .toList();
@@ -204,7 +204,7 @@ class _ScorePageState extends State<ScorePage> {
                               name: player.name,
                               winRate: 0.0,
                               scores: [],
-                              avatarText: player.avatarText,
+                              avatarText: player.avatar,
                             ),
                           )
                           .toList();

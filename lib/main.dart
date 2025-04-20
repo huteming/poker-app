@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/score_page.dart';
-import 'services/database_migration_service.dart';
 import 'config/database_config.dart';
 
 void main() async {

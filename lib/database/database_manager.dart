@@ -1,62 +1,60 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:developer';
+import 'package:http/http.dart' as http;
+import '../config/database_config.dart';
 
 class DatabaseManager {
-  final String accountId;
-  final String apiToken;
-  final String databaseId;
-  final String baseUrl = 'https://api.cloudflare.com/client/v4';
+  static final DatabaseManager _instance = DatabaseManager._internal();
+  factory DatabaseManager() => _instance;
+  DatabaseManager._internal();
 
-  DatabaseManager({
-    required this.accountId,
-    required this.apiToken,
-    required this.databaseId,
-  });
+  final String _baseUrl = 'https://api.cloudflare.com/client/v4/accounts';
+
+  // 测试数据库连接
+  Future<bool> testConnection() async {
+    try {
+      final result = await execute('SELECT 1');
+      return result['success'] == true;
+    } catch (e) {
+      log('数据库连接测试失败: $e');
+      return false;
+    }
+  }
 
   Future<Map<String, dynamic>> execute(
     String sql, [
     List<dynamic>? params,
   ]) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/accounts/$accountId/d1/database/$databaseId/query'),
-      headers: {
-        'Authorization': 'Bearer $apiToken',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({'sql': sql, 'params': params}),
-    );
+    try {
+      final url =
+          '$_baseUrl/${DatabaseConfig.accountId}/d1/database/${DatabaseConfig.databaseId}/query';
 
-    if (response.statusCode != 200) {
-      throw Exception('Database error: ${response.body}');
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer ${DatabaseConfig.apiToken}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'sql': sql, 'params': params ?? []}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Database query failed: ${response.body}');
+      }
+
+      final responseJson = jsonDecode(response.body);
+      if (!responseJson['success']) {
+        throw Exception('Database query failed: ${responseJson['errors']}');
+      }
+
+      // Cloudflare D1 的响应格式是 result[0].results
+      final result = responseJson['result'][0];
+
+      return result;
+    } catch (e) {
+      log('数据库查询失败，详细错误: $e');
+      log('错误堆栈: ${StackTrace.current}');
+      rethrow;
     }
-
-    final result = json.decode(response.body);
-    if (result['success'] != true) {
-      throw Exception('Database error: ${result['errors']}');
-    }
-
-    return result['result'][0];
-  }
-
-  Future<List<Map<String, dynamic>>> query(
-    String sql, [
-    List<dynamic>? params,
-  ]) async {
-    final result = await execute(sql, params);
-    return List<Map<String, dynamic>>.from(result['results']);
-  }
-
-  Future<int> insert(String sql, [List<dynamic>? params]) async {
-    final result = await execute(sql, params);
-    return result['last_row_id'];
-  }
-
-  Future<int> update(String sql, [List<dynamic>? params]) async {
-    final result = await execute(sql, params);
-    return result['changes'];
-  }
-
-  Future<int> delete(String sql, [List<dynamic>? params]) async {
-    return update(sql, params);
   }
 }

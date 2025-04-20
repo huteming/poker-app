@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/player.dart';
+import '../models/db_player.dart';
 import '../widgets/player_selection_list.dart';
 
 class AddPlayerPage extends StatefulWidget {
