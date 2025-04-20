@@ -50,6 +50,7 @@ class _ScorePageState extends State<ScorePage> {
           bombScore: players[3].bombCounts[dataIndex],
         ),
       ],
+      onDelete: () => _deleteRecord(displayIndex),
     );
 
     Navigator.of(context).push(
@@ -92,6 +93,28 @@ class _ScorePageState extends State<ScorePage> {
         }
       });
     }
+  }
+
+  void _deleteRecord(int displayIndex) {
+    // 由于显示是倒序的，需要将显示索引转换为实际的数据索引
+    final dataIndex = players.first.scores.length - 1 - displayIndex;
+
+    setState(() {
+      // 删除所有玩家对应的记录
+      for (var player in players) {
+        player.removeRecord(dataIndex);
+      }
+
+      // 更新胜率
+      for (var player in players) {
+        if (player.scores.isNotEmpty) {
+          final winCount = player.scores.where((score) => score > 0).length;
+          player.winRate = winCount / player.scores.length;
+        } else {
+          player.winRate = 0.0;
+        }
+      }
+    });
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -214,6 +237,7 @@ class _ScorePageState extends State<ScorePage> {
                           players: players,
                           rowIndex: reverseIndex,
                           onTap: () => _showGameDetail(context, index),
+                          onDelete: _deleteRecord,
                         );
                       },
                     ),

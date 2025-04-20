@@ -32,4 +32,13 @@ class PlayerScore {
     gameTypes.add(gameType);
     recordTimes.add(recordTime ?? DateTime.now());
   }
+
+  void removeRecord(int index) {
+    if (index >= 0 && index < scores.length) {
+      scores.removeAt(index);
+      bombCounts.removeAt(index);
+      gameTypes.removeAt(index);
+      recordTimes.removeAt(index);
+    }
+  }
 }

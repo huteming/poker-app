@@ -57,7 +57,6 @@ class GameDetailPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              // TODO: 实现删除功能
               showDialog(
                 context: context,
                 builder:
@@ -73,7 +72,10 @@ class GameDetailPage extends StatelessWidget {
                           onPressed: () {
                             Navigator.of(context).pop();
                             Navigator.of(context).pop();
-                            // TODO: 执行删除操作
+                            // 执行删除操作
+                            if (record.onDelete != null) {
+                              record.onDelete!();
+                            }
                           },
                           child: const Text(
                             '删除',
