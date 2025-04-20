@@ -12,7 +12,7 @@ class ScoreTypeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final types = ['常规胜负', '春天', '反春'];
+    final types = ['双扣', '单扣', '平扣'];
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),

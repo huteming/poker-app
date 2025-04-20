@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import '../models/player.dart';
+import '../services/player_service.dart';
 
 class PlayerSelectionList extends StatefulWidget {
-  final String searchQuery;
   final List<Player> selectedPlayers;
   final Function(List<Player>) onPlayersSelected;
 
   const PlayerSelectionList({
     Key? key,
-    required this.searchQuery,
     required this.selectedPlayers,
     required this.onPlayersSelected,
   }) : super(key: key);
@@ -18,6 +17,35 @@ class PlayerSelectionList extends StatefulWidget {
 }
 
 class _PlayerSelectionListState extends State<PlayerSelectionList> {
+  final PlayerService _playerService = PlayerService();
+  List<Player> _players = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlayers();
+  }
+
+  Future<void> _loadPlayers() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final players = await _playerService.getAllPlayers();
+      setState(() {
+        _players = players;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      // TODO: 处理错误
+    }
+  }
+
   void _togglePlayer(Player player) {
     final newSelectedPlayers = List<Player>.from(widget.selectedPlayers);
     if (newSelectedPlayers.contains(player)) {
@@ -30,28 +58,11 @@ class _PlayerSelectionListState extends State<PlayerSelectionList> {
 
   @override
   Widget build(BuildContext context) {
-    // 模拟所有玩家数据
-    final allPlayers = [
-      Player(name: '张三', avatarText: '张'),
-      Player(name: '李四', avatarText: '李'),
-      Player(name: '王五', avatarText: '王'),
-      Player(name: '赵六', avatarText: '赵'),
-      Player(name: '钱七', avatarText: '钱'),
-      Player(name: '孙八', avatarText: '孙'),
-      Player(name: '周九', avatarText: '周'),
-      Player(name: '吴十', avatarText: '吴'),
-      Player(name: '郑十一', avatarText: '郑'),
-      Player(name: '王十二', avatarText: '王'),
-    ];
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    // 过滤玩家列表
-    final filteredPlayers =
-        allPlayers.where((player) {
-          return player.name.contains(widget.searchQuery) ||
-              player.avatarText.contains(widget.searchQuery);
-        }).toList();
-
-    if (filteredPlayers.isEmpty) {
+    if (_players.isEmpty) {
       return const Center(
         child: Text(
           '没有找到相关玩家',
@@ -62,9 +73,9 @@ class _PlayerSelectionListState extends State<PlayerSelectionList> {
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: filteredPlayers.length,
+      itemCount: _players.length,
       itemBuilder: (context, index) {
-        final player = filteredPlayers[index];
+        final player = _players[index];
         final isSelected = widget.selectedPlayers.contains(player);
 
         return Padding(

@@ -31,6 +31,20 @@ class ScoreTableRow extends StatelessWidget {
           child: Row(
             children:
                 players.map((player) {
+                  if (player.scores.isEmpty ||
+                      rowIndex >= player.scores.length) {
+                    return const Expanded(
+                      child: Text(
+                        '-',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }
                   final score = player.scores[rowIndex];
                   return Expanded(
                     child: Text(

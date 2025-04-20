@@ -26,14 +26,12 @@ class BombScoreSelector extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    // 玩家头像
                     PlayerAvatar(name: player, isSelected: true),
                     const SizedBox(width: 12),
-                    // 分数选择器
                     Expanded(
                       child: Row(
-                        children: List.generate(5, (index) {
-                          final score = index + 6;
+                        children: List.generate(7, (index) {
+                          final score = index + 4;
                           final isSelected = bombScores[player] == score;
                           return Expanded(
                             child: GestureDetector(
@@ -51,21 +49,26 @@ class BombScoreSelector extends StatelessWidget {
                                           ? Colors.purple
                                           : Colors.transparent,
                                   borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color:
+                                        isSelected
+                                            ? Colors.purple
+                                            : Colors.grey.shade300,
+                                  ),
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    score.toString(),
-                                    style: TextStyle(
-                                      color:
-                                          isSelected
-                                              ? Colors.white
-                                              : Colors.black87,
-                                      fontSize: 14,
-                                      fontWeight:
-                                          isSelected
-                                              ? FontWeight.w500
-                                              : FontWeight.normal,
-                                    ),
+                                child: Text(
+                                  score.toString(),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color:
+                                        isSelected
+                                            ? Colors.white
+                                            : Colors.black87,
+                                    fontSize: 14,
+                                    fontWeight:
+                                        isSelected
+                                            ? FontWeight.w500
+                                            : FontWeight.normal,
                                   ),
                                 ),
                               ),

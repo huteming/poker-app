@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/player.dart';
 import '../models/player_score.dart';
 import '../models/game_record.dart';
 import '../widgets/score_table_row.dart';
@@ -17,25 +18,75 @@ class ScorePage extends StatefulWidget {
 class _ScorePageState extends State<ScorePage> {
   List<PlayerScore> players = [];
 
-  void _showGameDetail(BuildContext context, int roundNumber) {
-    // 模拟数据，实际应该从数据源获取
+  void _showGameDetail(BuildContext context, int roundIndex) {
     final record = GameRecord(
-      roundNumber: roundNumber,
-      playedAt: DateTime(2024, 2, 28, 14, 30),
-      gameType: '春天',
+      roundNumber: roundIndex + 1,
+      playedAt: DateTime.now(),
+      gameType: players[0].gameTypes[roundIndex],
       winners: [
-        PlayerGameRecord(name: '张', score: 120, bombScore: 9),
-        PlayerGameRecord(name: '李', score: 120, bombScore: 6),
+        PlayerGameRecord(
+          name: players[0].name,
+          score: players[0].scores[roundIndex],
+          bombScore: players[0].bombCounts[roundIndex],
+        ),
+        PlayerGameRecord(
+          name: players[1].name,
+          score: players[1].scores[roundIndex],
+          bombScore: players[1].bombCounts[roundIndex],
+        ),
       ],
       losers: [
-        PlayerGameRecord(name: '王', score: -120, bombScore: 7),
-        PlayerGameRecord(name: '赵', score: -120, bombScore: null),
+        PlayerGameRecord(
+          name: players[2].name,
+          score: players[2].scores[roundIndex],
+          bombScore: players[2].bombCounts[roundIndex],
+        ),
+        PlayerGameRecord(
+          name: players[3].name,
+          score: players[3].scores[roundIndex],
+          bombScore: players[3].bombCounts[roundIndex],
+        ),
       ],
     );
 
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => GameDetailPage(record: record)),
     );
+  }
+
+  void _addNewRecord() async {
+    if (players.isEmpty) return;
+
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => AddRecordPage(players: players)),
+    );
+
+    if (result != null && result is Map<String, dynamic>) {
+      final scores = result['scores'] as Map<String, int>;
+      final bombScores = result['bombScores'] as Map<String, int>;
+      final gameType = result['gameType'] as String;
+
+      setState(() {
+        // 更新每个玩家的分数记录
+        for (var player in players) {
+          if (scores.containsKey(player.name)) {
+            player.addRecord(
+              scores[player.name]!,
+              bombCount: bombScores[player.name] ?? 0,
+              gameType: gameType,
+            );
+          }
+        }
+
+        // 更新胜率
+        for (var player in players) {
+          if (player.scores.isNotEmpty) {
+            final winCount = player.scores.where((score) => score > 0).length;
+            player.winRate = winCount / player.scores.length;
+          }
+        }
+      });
+    }
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -68,32 +119,22 @@ class _ScorePageState extends State<ScorePage> {
               ),
             ),
             onPressed: () async {
-              final result = await Navigator.of(context).push(
+              final List<Player>? result = await Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const AddPlayerPage()),
               );
               if (result != null) {
-                // 模拟选择玩家后的积分数据
                 setState(() {
-                  players = [
-                    PlayerScore(
-                      name: '张三',
-                      winRate: 0.60,
-                      scores: [140, -80, 100],
-                      avatarText: '张',
-                    ),
-                    PlayerScore(
-                      name: '李四',
-                      winRate: 0.55,
-                      scores: [140, -80, 100],
-                      avatarText: '李',
-                    ),
-                    PlayerScore(
-                      name: '王五',
-                      winRate: 0.48,
-                      scores: [-140, 80, -100],
-                      avatarText: '王',
-                    ),
-                  ];
+                  players =
+                      result
+                          .map(
+                            (player) => PlayerScore(
+                              name: player.name,
+                              winRate: 0.0,
+                              scores: [],
+                              avatarText: player.avatarText,
+                            ),
+                          )
+                          .toList();
                 });
               }
             },
@@ -116,98 +157,74 @@ class _ScorePageState extends State<ScorePage> {
       );
     }
 
-    // 获取记录数量
-    final recordCount = players.first.scores.length;
-
     return Scaffold(
-      appBar: AppBar(title: const Text('本局积分')),
+      appBar: AppBar(
+        title: const Text('本局积分'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.group_add),
+            onPressed: () async {
+              final List<Player>? result = await Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const AddPlayerPage()),
+              );
+              if (result != null) {
+                setState(() {
+                  players =
+                      result
+                          .map(
+                            (player) => PlayerScore(
+                              name: player.name,
+                              winRate: 0.0,
+                              scores: [],
+                              avatarText: player.avatarText,
+                            ),
+                          )
+                          .toList();
+                });
+              }
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           ScoreTableHeader(players: players),
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: recordCount,
-              itemBuilder: (context, index) {
-                return ScoreTableRow(
-                  players: players,
-                  rowIndex: index,
-                  onTap: () => _showGameDetail(context, index + 1),
-                );
-              },
-            ),
+            child:
+                players.first.scores.isEmpty
+                    ? const Center(
+                      child: Text(
+                        '暂无记录',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    )
+                    : ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: players.first.scores.length,
+                      itemBuilder: (context, index) {
+                        return ScoreTableRow(
+                          players: players,
+                          rowIndex: index,
+                          onTap: () => _showGameDetail(context, index),
+                        );
+                      },
+                    ),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    onPressed: () async {
-                      final result = await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const AddPlayerPage(),
-                        ),
-                      );
-                      if (result != null) {
-                        // 模拟选择玩家后的积分数据
-                        setState(() {
-                          players = [
-                            PlayerScore(
-                              name: '张三',
-                              winRate: 0.60,
-                              scores: [140, -80, 100],
-                              avatarText: '张',
-                            ),
-                            PlayerScore(
-                              name: '李四',
-                              winRate: 0.55,
-                              scores: [140, -80, 100],
-                              avatarText: '李',
-                            ),
-                            PlayerScore(
-                              name: '王五',
-                              winRate: 0.48,
-                              scores: [-140, 80, -100],
-                              avatarText: '王',
-                            ),
-                          ];
-                        });
-                      }
-                    },
-                    child: const Text(
-                      '新增玩家',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const AddRecordPage(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      '添加新记录',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
+                onPressed: _addNewRecord,
+                child: const Text(
+                  '添加新记录',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
-              ],
+              ),
             ),
           ),
         ],
