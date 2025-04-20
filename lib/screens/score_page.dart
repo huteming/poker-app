@@ -18,33 +18,36 @@ class ScorePage extends StatefulWidget {
 class _ScorePageState extends State<ScorePage> {
   List<PlayerScore> players = [];
 
-  void _showGameDetail(BuildContext context, int roundIndex) {
+  void _showGameDetail(BuildContext context, int displayIndex) {
+    // 由于显示是倒序的，需要将显示索引转换为实际的数据索引
+    final dataIndex = players.first.scores.length - 1 - displayIndex;
+
     final record = GameRecord(
-      roundNumber: roundIndex + 1,
-      playedAt: players[0].recordTimes[roundIndex],
-      gameType: players[0].gameTypes[roundIndex],
+      roundNumber: displayIndex + 1,
+      playedAt: players[0].recordTimes[dataIndex],
+      gameType: players[0].gameTypes[dataIndex],
       winners: [
         PlayerGameRecord(
           name: players[0].name,
-          score: players[0].scores[roundIndex],
-          bombScore: players[0].bombCounts[roundIndex],
+          score: players[0].scores[dataIndex],
+          bombScore: players[0].bombCounts[dataIndex],
         ),
         PlayerGameRecord(
           name: players[1].name,
-          score: players[1].scores[roundIndex],
-          bombScore: players[1].bombCounts[roundIndex],
+          score: players[1].scores[dataIndex],
+          bombScore: players[1].bombCounts[dataIndex],
         ),
       ],
       losers: [
         PlayerGameRecord(
           name: players[2].name,
-          score: players[2].scores[roundIndex],
-          bombScore: players[2].bombCounts[roundIndex],
+          score: players[2].scores[dataIndex],
+          bombScore: players[2].bombCounts[dataIndex],
         ),
         PlayerGameRecord(
           name: players[3].name,
-          score: players[3].scores[roundIndex],
-          bombScore: players[3].bombCounts[roundIndex],
+          score: players[3].scores[dataIndex],
+          bombScore: players[3].bombCounts[dataIndex],
         ),
       ],
     );
@@ -204,9 +207,12 @@ class _ScorePageState extends State<ScorePage> {
                       padding: EdgeInsets.zero,
                       itemCount: players.first.scores.length,
                       itemBuilder: (context, index) {
+                        // 倒序显示记录
+                        final reverseIndex =
+                            players.first.scores.length - 1 - index;
                         return ScoreTableRow(
                           players: players,
-                          rowIndex: index,
+                          rowIndex: reverseIndex,
                           onTap: () => _showGameDetail(context, index),
                         );
                       },
