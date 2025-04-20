@@ -24,23 +24,45 @@ class DatabaseService {
     String sql, [
     List<dynamic>? params,
   ]) async {
-    final url =
-        '$_baseUrl/${DatabaseConfig.accountId}/d1/database/${DatabaseConfig.databaseId}/query';
+    try {
+      print('执行 SQL 查询: $sql');
+      print('参数: $params');
 
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Authorization': 'Bearer ${DatabaseConfig.apiToken}',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'sql': sql, 'params': params ?? []}),
-    );
+      final url =
+          '$_baseUrl/${DatabaseConfig.accountId}/d1/database/${DatabaseConfig.databaseId}/query';
+      print('请求 URL: $url');
 
-    if (response.statusCode != 200) {
-      throw Exception('Database query failed: ${response.body}');
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer ${DatabaseConfig.apiToken}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'sql': sql, 'params': params ?? []}),
+      );
+
+      print('响应状态码: ${response.statusCode}');
+      print('响应内容: ${response.body}');
+
+      if (response.statusCode != 200) {
+        throw Exception('Database query failed: ${response.body}');
+      }
+
+      final responseJson = jsonDecode(response.body);
+      if (!responseJson['success']) {
+        throw Exception('Database query failed: ${responseJson['errors']}');
+      }
+
+      // Cloudflare D1 的响应格式是 result[0].results
+      final result = responseJson['result'][0];
+      print('解析后的响应: $result');
+
+      return result;
+    } catch (e) {
+      print('数据库查询失败，详细错误: $e');
+      print('错误堆栈: ${StackTrace.current}');
+      rethrow;
     }
-
-    return jsonDecode(response.body);
   }
 
   // 创建表

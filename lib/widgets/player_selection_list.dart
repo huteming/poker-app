@@ -36,13 +36,17 @@ class _PlayerSelectionListState extends State<PlayerSelectionList> {
       final players = await _playerService.getAllPlayers();
       setState(() {
         _players = players;
-        _isLoading = false;
       });
     } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('加载玩家列表失败: $e')));
+      }
+    } finally {
       setState(() {
         _isLoading = false;
       });
-      // TODO: 处理错误
     }
   }
 
