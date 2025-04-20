@@ -43,6 +43,16 @@ class ScoreTableHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
+                      player.totalScore.toString(),
+                      style: TextStyle(
+                        color:
+                            player.totalScore >= 0 ? Colors.green : Colors.red,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
                       '${(player.winRate * 100).toInt()}%',
                       style: const TextStyle(
                         color: Colors.purple,
