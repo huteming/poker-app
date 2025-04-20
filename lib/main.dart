@@ -13,14 +13,6 @@ void main() async {
   // 验证数据库配置
   DatabaseConfig.validate();
 
-  // 初始化数据库
-  final migrationService = DatabaseMigrationService();
-  try {
-    await migrationService.initialize();
-  } catch (e) {
-    print('数据库初始化失败: $e');
-  }
-
   runApp(const MyApp());
 }
 
