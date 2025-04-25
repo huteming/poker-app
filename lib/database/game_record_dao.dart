@@ -120,6 +120,29 @@ class GameRecordDao {
     }
   }
 
+  Future<int> settleAllPendingRecords() async {
+    try {
+      final now = DateTime.now();
+      final res = await _db.execute(
+        '''
+        UPDATE game_records 
+        SET settlement_status = 'COMPLETED', updated_at = ? 
+        WHERE settlement_status = 'PENDING'
+        ''',
+        [now.toIso8601String()],
+      );
+
+      // 更新后清除缓存
+      _cachedRecords = null;
+
+      return res['rowsAffected'] ?? 0;
+    } catch (e) {
+      log('结算游戏记录失败，详细错误: $e');
+      log('错误堆栈: ${StackTrace.current}');
+      rethrow;
+    }
+  }
+
   bool isCacheValid() {
     return _cachedRecords != null &&
         _lastCacheTime != null &&

@@ -459,6 +459,9 @@ class _ScorePageState extends State<ScorePage> {
                 case 'add_player':
                   _navigateToAddPlayer();
                   break;
+                case 'settle_all':
+                  _settleAllRecords();
+                  break;
                 // 可以添加更多选项
               }
             },
@@ -471,6 +474,16 @@ class _ScorePageState extends State<ScorePage> {
                         Icon(Icons.group_add, color: Colors.black54),
                         SizedBox(width: 8),
                         Text('添加玩家'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'settle_all',
+                    child: Row(
+                      children: [
+                        Icon(Icons.done_all, color: Colors.black54),
+                        SizedBox(width: 8),
+                        Text('结算本局'),
                       ],
                     ),
                   ),
@@ -551,6 +564,58 @@ class _ScorePageState extends State<ScorePage> {
                 )
                 .toList();
       });
+    }
+  }
+
+  Future<void> _settleAllRecords() async {
+    // 显示确认对话框
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('确认结算'),
+          content: const Text('确定要结算当前所有记录吗？结算后将不再显示在本页面。'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('确认结算', style: TextStyle(color: Colors.blue)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    try {
+      setState(() {
+        _isRefreshing = true;
+      });
+
+      final int settledCount = await _gameRecordDao.settleAllPendingRecords();
+
+      setState(() {
+        _isRefreshing = false;
+      });
+
+      // 刷新数据
+      await _loadGameRecords();
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('成功结算 $settledCount 条记录')));
+    } catch (e) {
+      setState(() {
+        _isRefreshing = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('结算失败: $e')));
     }
   }
 }
