@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/score_page.dart';
 import 'config/database_config.dart';
+import 'database/database_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +12,15 @@ void main() async {
 
   // 验证数据库配置
   DatabaseConfig.validate();
+
+  // 初始化数据库
+  try {
+    await DatabaseManager().initialize();
+    print('数据库迁移成功');
+  } catch (e) {
+    print('数据库迁移失败: $e');
+    rethrow;
+  }
 
   runApp(const MyApp());
 }

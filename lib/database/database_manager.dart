@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
 import '../config/database_config.dart';
+import 'game_record_migration.dart';
 
 class DatabaseManager {
   static final DatabaseManager _instance = DatabaseManager._internal();
@@ -9,6 +10,45 @@ class DatabaseManager {
   DatabaseManager._internal();
 
   final String _baseUrl = 'https://api.cloudflare.com/client/v4/accounts';
+
+  // 初始化数据库
+  Future<void> initialize() async {
+    try {
+      await GameRecordMigration.createTable(this);
+      await GameRecordMigration.createIndexes(this);
+      await _verifyTableStructure();
+      log('数据库初始化成功');
+    } catch (e) {
+      log('数据库初始化失败: $e');
+      rethrow;
+    }
+  }
+
+  // 验证表结构
+  Future<void> _verifyTableStructure() async {
+    try {
+      final result = await execute('''
+        PRAGMA table_info(game_records)
+      ''');
+
+      if (result['results'] == null || (result['results'] as List).isEmpty) {
+        throw Exception('表结构验证失败：无法获取表信息');
+      }
+
+      final columns = result['results'] as List;
+      log('表结构验证成功，共 ${columns.length} 个字段');
+
+      // 打印表结构信息
+      for (var column in columns) {
+        log(
+          '字段: ${column['name']}, 类型: ${column['type']}, 非空: ${column['notnull'] == 1}',
+        );
+      }
+    } catch (e) {
+      log('表结构验证失败: $e');
+      rethrow;
+    }
+  }
 
   // 测试数据库连接
   Future<bool> testConnection() async {
