@@ -1,17 +1,18 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../models/db_player.dart';
-import '../models/player_score.dart';
-import '../models/game_record.dart';
-import '../models/db_game_record.dart';
-import '../widgets/score_table_row.dart';
-import '../widgets/score_table_header.dart';
-import 'add_record_page.dart';
-import 'add_player_page.dart';
-import 'game_detail_page.dart';
-import 'players_page.dart';
-import '../database/game_record_dao.dart';
-import '../database/player_dao.dart';
+import 'package:poker/models/db_player.dart';
+import 'package:poker/models/player_score.dart';
+import 'package:poker/models/game_record.dart';
+import 'package:poker/models/db_game_record.dart';
+import 'package:poker/widgets/score_table_row.dart';
+import 'package:poker/widgets/score_table_header.dart';
+import 'package:poker/screens/add_record_page.dart';
+import 'package:poker/screens/add_player_page.dart';
+import 'package:poker/screens/game_detail_page.dart';
+import 'package:poker/screens/players_page.dart';
+import 'package:poker/database/game_record_dao.dart';
+import 'package:poker/database/player_dao.dart';
+import 'widgets/loading_view.dart';
+import 'widgets/empty_view.dart';
 
 class ScorePage extends StatefulWidget {
   const ScorePage({super.key});
@@ -39,49 +40,27 @@ class _ScorePageState extends State<ScorePage> {
       _isLoading = true;
     });
 
-    try {
-      // 首先加载所有玩家
-      await _loadPlayers();
+    // 顺序加载数据，不再需要 try-catch
+    await _loadPlayers();
+    await _loadGameRecords();
 
-      // 然后加载游戏记录
-      await _loadGameRecords();
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      // 处理错误
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('加载数据失败: $e')));
-    }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _loadPlayers() async {
-    try {
-      _allPlayers = await _playerDao.findAll();
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('加载玩家失败: $e')));
-      throw e; // 重新抛出异常以便上层处理
-    }
+    // 直接获取玩家列表，DAO 层会处理错误并返回空列表
+    _allPlayers = await _playerDao.findAll();
   }
 
   Future<void> _loadGameRecords() async {
-    try {
-      final records = await _gameRecordDao.getPendingRecords();
-      setState(() {
-        _processRecords(records);
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      // 处理错误
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('加载游戏记录失败: $e')));
-    }
+    // 获取游戏记录，DAO 层会处理错误并返回空列表
+    final records = await _gameRecordDao.getPendingRecords();
+
+    setState(() {
+      _processRecords(records);
+    });
   }
 
   Future<void> _refreshRecords() async {
@@ -90,31 +69,19 @@ class _ScorePageState extends State<ScorePage> {
       _isRefreshing = true;
     });
 
-    try {
-      final records = await _gameRecordDao.getPendingRecords();
+    // 刷新数据，DAO 层会处理错误
+    final records = await _gameRecordDao.getPendingRecords();
+    await _loadPlayers(); // 同时刷新玩家数据
 
-      // 删除缓存强制刷新
-      await _loadPlayers();
+    if (mounted) {
+      setState(() {
+        _isRefreshing = false;
+        _processRecords(records);
+      });
 
-      if (mounted) {
-        setState(() {
-          _isRefreshing = false;
-          _processRecords(records);
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('刷新成功'), duration: Duration(seconds: 1)),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isRefreshing = false;
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('刷新失败: $e')));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('刷新成功'), duration: Duration(seconds: 1)),
+      );
     }
   }
 
@@ -248,20 +215,25 @@ class _ScorePageState extends State<ScorePage> {
     // 直接使用存储的记录ID
     final recordId = players[0].recordIds[dataIndex];
 
-    try {
-      // 直接使用ID删除记录，无需再查询
-      await _gameRecordDao.deleteRecord(recordId);
+    // 标记为正在加载
+    setState(() {
+      _isRefreshing = true;
+    });
 
-      // 刷新数据
-      await _loadGameRecords();
+    // 删除记录，DAO 层处理错误并返回结果
+    final success = await _gameRecordDao.deleteRecord(recordId);
 
+    // 刷新数据
+    await _loadGameRecords();
+
+    setState(() {
+      _isRefreshing = false;
+    });
+
+    if (mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('记录已成功删除')));
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('删除记录失败: $e')));
+      ).showSnackBar(SnackBar(content: Text(success ? '记录已成功删除' : '删除记录失败')));
     }
   }
 
@@ -343,91 +315,99 @@ class _ScorePageState extends State<ScorePage> {
     }
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.group_outlined, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            '暂无玩家',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
+  void _navigateToAddPlayer() async {
+    final List<Player>? result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const AddPlayerPage()));
+    if (result != null) {
+      setState(() {
+        players =
+            result
+                .map(
+                  (player) => PlayerScore(
+                    name: player.name,
+                    winRate: 0.0,
+                    scores: [],
+                    bombCounts: [],
+                    avatarText: player.avatar,
+                    recordTimes: [],
+                    gameTypes: [],
+                    recordIds: [],
+                  ),
+                )
+                .toList();
+      });
+    }
+  }
+
+  Future<void> _settleAllRecords() async {
+    // 显示确认对话框
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('确认结算'),
+          content: const Text('确定要结算当前所有记录吗？结算后将不再显示在本页面。'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('取消'),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '请先添加玩家开始游戏',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('确认结算', style: TextStyle(color: Colors.blue)),
             ),
-            onPressed: () async {
-              final List<Player>? result = await Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AddPlayerPage()),
-              );
-              if (result != null) {
-                setState(() {
-                  players =
-                      result
-                          .map(
-                            (player) => PlayerScore(
-                              name: player.name,
-                              winRate: 0.0,
-                              scores: [],
-                              bombCounts: [],
-                              avatarText: player.avatar,
-                              recordTimes: [],
-                              gameTypes: [],
-                              recordIds: [], // 添加记录ID列表
-                            ),
-                          )
-                          .toList();
-                });
-              }
-            },
-            child: const Text(
-              '添加玩家',
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
+
+    if (confirm != true) return;
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    // 结算记录，DAO 层处理错误并返回结果
+    final settledCount = await _gameRecordDao.settleAllPendingRecords();
+
+    // 刷新数据
+    await _loadGameRecords();
+
+    setState(() {
+      _isRefreshing = false;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            settledCount > 0 ? '成功结算 $settledCount 条记录' : '没有记录需要结算',
+          ),
+        ),
+      );
+    }
+  }
+
+  void _navigateToPlayersPage() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const PlayersPage()));
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('本局积分')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
+      return const ScorePageLoadingView();
     }
 
     if (players.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('本局积分'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: '刷新列表',
-              onPressed: _refreshRecords,
-            ),
-          ],
-        ),
-        body: _buildEmptyState(context),
+      return ScorePageEmptyView(
+        onPlayersAdded: (playerScores) {
+          setState(() {
+            players = playerScores;
+          });
+        },
       );
     }
 
@@ -554,88 +534,5 @@ class _ScorePageState extends State<ScorePage> {
         ],
       ),
     );
-  }
-
-  void _navigateToAddPlayer() async {
-    final List<Player>? result = await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const AddPlayerPage()));
-    if (result != null) {
-      setState(() {
-        players =
-            result
-                .map(
-                  (player) => PlayerScore(
-                    name: player.name,
-                    winRate: 0.0,
-                    scores: [],
-                    bombCounts: [],
-                    avatarText: player.avatar,
-                    recordTimes: [],
-                    gameTypes: [],
-                    recordIds: [],
-                  ),
-                )
-                .toList();
-      });
-    }
-  }
-
-  Future<void> _settleAllRecords() async {
-    // 显示确认对话框
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('确认结算'),
-          content: const Text('确定要结算当前所有记录吗？结算后将不再显示在本页面。'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('确认结算', style: TextStyle(color: Colors.blue)),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirm != true) return;
-
-    try {
-      setState(() {
-        _isRefreshing = true;
-      });
-
-      final int settledCount = await _gameRecordDao.settleAllPendingRecords();
-
-      setState(() {
-        _isRefreshing = false;
-      });
-
-      // 刷新数据
-      await _loadGameRecords();
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('成功结算 $settledCount 条记录')));
-    } catch (e) {
-      setState(() {
-        _isRefreshing = false;
-      });
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('结算失败: $e')));
-    }
-  }
-
-  void _navigateToPlayersPage() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const PlayersPage()));
   }
 }

@@ -35,7 +35,7 @@ class GameRecordDao {
     } catch (e) {
       log('获取游戏记录失败，详细错误: $e');
       log('错误堆栈: ${StackTrace.current}');
-      rethrow;
+      return [];
     }
   }
 
@@ -47,7 +47,8 @@ class GameRecordDao {
   ) async {
     try {
       if (playerIds.length != 4) {
-        throw ArgumentError('需要正好4名玩家');
+        log('插入记录失败: 需要正好4名玩家');
+        return 0;
       }
 
       final now = DateTime.now();
@@ -103,20 +104,21 @@ class GameRecordDao {
     } catch (e) {
       log('插入游戏记录失败，详细错误: $e');
       log('错误堆栈: ${StackTrace.current}');
-      rethrow;
+      return 0;
     }
   }
 
-  Future<void> deleteRecord(int id) async {
+  Future<bool> deleteRecord(int id) async {
     try {
       await _db.execute('DELETE FROM game_records WHERE id = ?', [id]);
 
       // 删除后清除缓存
       _cachedRecords = null;
+      return true;
     } catch (e) {
       log('删除游戏记录失败，详细错误: $e');
       log('错误堆栈: ${StackTrace.current}');
-      rethrow;
+      return false;
     }
   }
 
@@ -139,7 +141,7 @@ class GameRecordDao {
     } catch (e) {
       log('结算游戏记录失败，详细错误: $e');
       log('错误堆栈: ${StackTrace.current}');
-      rethrow;
+      return 0;
     }
   }
 
@@ -164,7 +166,7 @@ class GameRecordDao {
     } catch (e) {
       log('获取玩家对局记录失败，详细错误: $e');
       log('错误堆栈: ${StackTrace.current}');
-      rethrow;
+      return [];
     }
   }
 
@@ -237,7 +239,13 @@ class GameRecordDao {
     } catch (e) {
       log('获取玩家统计信息失败，详细错误: $e');
       log('错误堆栈: ${StackTrace.current}');
-      rethrow;
+      return {
+        'totalGames': 0,
+        'wins': 0,
+        'winRate': 0.0,
+        'totalScore': 0,
+        'totalBombScore': 0,
+      };
     }
   }
 
@@ -272,7 +280,7 @@ class GameRecordDao {
     } catch (e) {
       log('获取所有玩家统计信息失败，详细错误: $e');
       log('错误堆栈: ${StackTrace.current}');
-      rethrow;
+      return [];
     }
   }
 

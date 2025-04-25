@@ -30,7 +30,7 @@ class PlayerDao {
     } catch (e) {
       log('获取玩家列表失败，详细错误: $e');
       log('错误堆栈: ${StackTrace.current}');
-      rethrow;
+      return [];
     }
   }
 
