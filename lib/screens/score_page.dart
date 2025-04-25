@@ -14,7 +14,7 @@ import '../database/game_record_dao.dart';
 import '../database/player_dao.dart';
 
 class ScorePage extends StatefulWidget {
-  const ScorePage({Key? key}) : super(key: key);
+  const ScorePage({super.key});
 
   @override
   State<ScorePage> createState() => _ScorePageState();

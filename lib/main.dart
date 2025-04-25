@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/home_page.dart';
@@ -11,14 +13,16 @@ void main() async {
   await dotenv.load(fileName: ".env");
 
   // 验证数据库配置
-  DatabaseConfig.validate();
-
-  // 初始化数据库
   try {
+    DatabaseConfig.validate();
     await DatabaseManager().initialize();
-    print('数据库迁移成功');
+    log('数据库迁移成功');
   } catch (e) {
-    print('数据库迁移失败: $e');
+    if (e.toString().contains('Cloudflare configuration is missing')) {
+      log('数据库配置验证失败: $e');
+    } else {
+      log('数据库迁移失败: $e');
+    }
     rethrow;
   }
 
@@ -26,12 +30,12 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '扑克积分',
+      title: '双扣积分',
       theme: ThemeData(
         primarySwatch: Colors.purple,
         scaffoldBackgroundColor: Colors.grey[100],

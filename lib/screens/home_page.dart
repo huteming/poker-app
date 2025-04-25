@@ -3,33 +3,36 @@ import 'score_page.dart';
 import 'players_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  int _selectedTabIndex = 0;
 
   static final List<Widget> _pages = [const ScorePage(), const PlayersPage()];
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _selectedTabIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _pages[_selectedTabIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.score), label: '积分'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: '玩家'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sports_esports),
+            label: '对战',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: '统计'),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: _selectedTabIndex,
         selectedItemColor: Colors.purple,
         onTap: _onItemTapped,
       ),
