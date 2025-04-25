@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'screens/score_page.dart';
+import 'screens/home_page.dart';
 import 'config/database_config.dart';
 import 'database/database_manager.dart';
 
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.purple,
         scaffoldBackgroundColor: Colors.grey[100],
       ),
-      home: const ScorePage(),
+      home: const HomePage(),
     );
   }
 }

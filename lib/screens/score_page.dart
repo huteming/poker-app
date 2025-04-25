@@ -9,6 +9,7 @@ import '../widgets/score_table_header.dart';
 import 'add_record_page.dart';
 import 'add_player_page.dart';
 import 'game_detail_page.dart';
+import 'players_page.dart';
 import '../database/game_record_dao.dart';
 import '../database/player_dao.dart';
 
@@ -462,6 +463,9 @@ class _ScorePageState extends State<ScorePage> {
                 case 'settle_all':
                   _settleAllRecords();
                   break;
+                case 'view_players':
+                  _navigateToPlayersPage();
+                  break;
                 // 可以添加更多选项
               }
             },
@@ -474,6 +478,16 @@ class _ScorePageState extends State<ScorePage> {
                         Icon(Icons.group_add, color: Colors.black54),
                         SizedBox(width: 8),
                         Text('添加玩家'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'view_players',
+                    child: Row(
+                      children: [
+                        Icon(Icons.people, color: Colors.black54),
+                        SizedBox(width: 8),
+                        Text('玩家列表'),
                       ],
                     ),
                   ),
@@ -617,5 +631,11 @@ class _ScorePageState extends State<ScorePage> {
         context,
       ).showSnackBar(SnackBar(content: Text('结算失败: $e')));
     }
+  }
+
+  void _navigateToPlayersPage() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const PlayersPage()));
   }
 }

@@ -143,6 +143,139 @@ class GameRecordDao {
     }
   }
 
+  Future<List<DbGameRecord>> getPlayerRecords(String playerName) async {
+    try {
+      // 查询包含该玩家的所有游戏记录
+      final res = await _db.execute(
+        '''
+        SELECT * FROM game_records 
+        WHERE 
+          player1_id = ? OR 
+          player2_id = ? OR 
+          player3_id = ? OR 
+          player4_id = ?
+        ORDER BY created_at DESC
+        ''',
+        [playerName, playerName, playerName, playerName],
+      );
+      final List<dynamic> results = res['results'] ?? [];
+
+      return results.map((map) => DbGameRecord.fromMap(map)).toList();
+    } catch (e) {
+      log('获取玩家对局记录失败，详细错误: $e');
+      log('错误堆栈: ${StackTrace.current}');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getPlayerStatistics(String playerName) async {
+    try {
+      // 查询包含该玩家的所有游戏记录（包括已结算和未结算的）
+      final res = await _db.execute(
+        '''
+        SELECT 
+          COUNT(*) as total_games,
+          SUM(CASE 
+            WHEN (player1_id = ? AND player1_final_score > 0) OR
+                 (player2_id = ? AND player2_final_score > 0) OR
+                 (player3_id = ? AND player3_final_score > 0) OR
+                 (player4_id = ? AND player4_final_score > 0)
+            THEN 1 ELSE 0 END) as wins,
+          SUM(CASE 
+            WHEN player1_id = ? THEN player1_final_score
+            WHEN player2_id = ? THEN player2_final_score
+            WHEN player3_id = ? THEN player3_final_score
+            WHEN player4_id = ? THEN player4_final_score
+            ELSE 0 END) as total_score,
+          SUM(CASE 
+            WHEN player1_id = ? THEN player1_bomb_score
+            WHEN player2_id = ? THEN player2_bomb_score
+            WHEN player3_id = ? THEN player3_bomb_score
+            WHEN player4_id = ? THEN player4_bomb_score
+            ELSE 0 END) as total_bomb_score
+        FROM game_records 
+        WHERE 
+          player1_id = ? OR 
+          player2_id = ? OR 
+          player3_id = ? OR 
+          player4_id = ?
+        ''',
+        [
+          playerName, playerName, playerName, playerName, // 胜场计算
+          playerName, playerName, playerName, playerName, // 总分计算
+          playerName, playerName, playerName, playerName, // 炸弹分计算
+          playerName, playerName, playerName, playerName, // WHERE 条件
+        ],
+      );
+
+      final List<dynamic> results = res['results'] ?? [];
+
+      if (results.isEmpty) {
+        return {
+          'totalGames': 0,
+          'wins': 0,
+          'winRate': 0.0,
+          'totalScore': 0,
+          'totalBombScore': 0,
+        };
+      }
+
+      final data = results[0];
+      final int totalGames = data['total_games'] ?? 0;
+      final int wins = data['wins'] ?? 0;
+      final double winRate = totalGames > 0 ? wins / totalGames : 0.0;
+      final int totalScore = data['total_score'] ?? 0;
+      final int totalBombScore = data['total_bomb_score'] ?? 0;
+
+      return {
+        'totalGames': totalGames,
+        'wins': wins,
+        'winRate': winRate,
+        'totalScore': totalScore,
+        'totalBombScore': totalBombScore,
+      };
+    } catch (e) {
+      log('获取玩家统计信息失败，详细错误: $e');
+      log('错误堆栈: ${StackTrace.current}');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllPlayersStatistics() async {
+    try {
+      // 获取所有玩家
+      final playersRes = await _db.execute('SELECT DISTINCT name FROM players');
+      final List<dynamic> playersResults = playersRes['results'] ?? [];
+
+      final List<Map<String, dynamic>> result = [];
+
+      // 为每个玩家计算统计信息
+      for (var player in playersResults) {
+        final playerName = player['name'];
+        if (playerName == null) continue;
+
+        final stats = await getPlayerStatistics(playerName);
+        result.add({'playerName': playerName, ...stats});
+      }
+
+      // 按总分排序
+      result.sort(
+        (a, b) => (b['totalScore'] as int).compareTo(a['totalScore'] as int),
+      );
+
+      // 添加排名
+      for (int i = 0; i < result.length; i++) {
+        result[i]['rank'] = i + 1;
+      }
+
+      return result;
+    } catch (e) {
+      log('获取所有玩家统计信息失败，详细错误: $e');
+      log('错误堆栈: ${StackTrace.current}');
+      rethrow;
+    }
+  }
+
   bool isCacheValid() {
     return _cachedRecords != null &&
         _lastCacheTime != null &&
