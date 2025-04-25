@@ -5,6 +5,7 @@ class PlayerAvatar extends StatelessWidget {
   final bool isSelected;
   final bool isWinner;
   final int selectedIndex;
+  final String? avatarText;
 
   const PlayerAvatar({
     Key? key,
@@ -12,6 +13,7 @@ class PlayerAvatar extends StatelessWidget {
     this.isSelected = false,
     this.isWinner = false,
     this.selectedIndex = 0,
+    this.avatarText,
   }) : super(key: key);
 
   Color _getBackgroundColor() {
@@ -34,7 +36,7 @@ class PlayerAvatar extends StatelessWidget {
           radius: 28,
           backgroundColor: _getBackgroundColor(),
           child: Text(
-            name,
+            avatarText ?? name,
             style: const TextStyle(
               color: Colors.black87,
               fontSize: 16,

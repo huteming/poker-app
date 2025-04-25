@@ -5,9 +5,11 @@ import '../widgets/player_selector.dart';
 import '../widgets/bomb_score_selector.dart';
 import '../utils/score_calculator.dart';
 import '../models/player_score.dart';
+import '../models/db_player.dart';
+import '../database/game_record_dao.dart';
 
 class AddRecordPage extends StatefulWidget {
-  final List<PlayerScore> players;
+  final List<dynamic> players;
 
   const AddRecordPage({Key? key, required this.players}) : super(key: key);
 
@@ -19,6 +21,13 @@ class _AddRecordPageState extends State<AddRecordPage> {
   final List<String> selectedPlayers = [];
   final Map<String, int> bombScores = {};
   String selectedScoreType = '双扣';
+  final GameRecordDao _gameRecordDao = GameRecordDao();
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _handlePlayerSelection(List<String> selected) {
     setState(() {
@@ -35,8 +44,12 @@ class _AddRecordPageState extends State<AddRecordPage> {
     });
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     if (selectedPlayers.length != 4) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
 
     try {
       final scores = createGameScores(
@@ -44,24 +57,47 @@ class _AddRecordPageState extends State<AddRecordPage> {
         selectedPlayers,
         bombScores,
       );
-      final recordTime = DateTime.now();
 
-      // 返回完整的记录信息
-      Navigator.of(context).pop({
-        'scores': scores,
-        'bombScores': bombScores,
-        'gameType': selectedScoreType,
-        'recordTime': recordTime,
-      });
+      // 直接保存到数据库
+      await _gameRecordDao.insertRecord(
+        selectedScoreType,
+        selectedPlayers,
+        scores,
+        bombScores,
+      );
+
+      // 返回成功结果
+      if (mounted) {
+        Navigator.of(context).pop({'success': true});
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('计算积分时出错：$e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('保存记录失败：$e')));
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // 提取所有玩家名称
+    final playerNames =
+        widget.players
+            .map((p) {
+              if (p is PlayerScore) {
+                return p.name;
+              } else if (p is Player) {
+                return p.name;
+              }
+              return '';
+            })
+            .where((name) => name.isNotEmpty)
+            .toList();
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -70,16 +106,31 @@ class _AddRecordPageState extends State<AddRecordPage> {
         ),
         title: const Text('添加新记录'),
         actions: [
-          TextButton(
-            onPressed: selectedPlayers.length == 4 ? _handleSubmit : null,
-            child: Text(
-              '确认提交',
-              style: TextStyle(
-                color:
-                    selectedPlayers.length == 4 ? Colors.purple : Colors.grey,
+          if (_isSubmitting)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
+                  ),
+                ),
+              ),
+            )
+          else
+            TextButton(
+              onPressed: selectedPlayers.length == 4 ? _handleSubmit : null,
+              child: Text(
+                '确认提交',
+                style: TextStyle(
+                  color:
+                      selectedPlayers.length == 4 ? Colors.purple : Colors.grey,
+                ),
               ),
             ),
-          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -94,7 +145,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
               ),
             ),
             PlayerSelector(
-              players: widget.players.map((p) => p.name).toList(),
+              players: playerNames,
               selectedPlayers: selectedPlayers,
               onSelectionChanged: _handlePlayerSelection,
             ),
