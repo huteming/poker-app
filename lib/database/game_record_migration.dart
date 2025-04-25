@@ -8,6 +8,11 @@ class GameRecordMigration {
         game_id TEXT NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         
+        player1_id TEXT NOT NULL,
+        player2_id TEXT NOT NULL,
+        player3_id TEXT NOT NULL,
+        player4_id TEXT NOT NULL,
+        
         player1_bomb_score INTEGER NOT NULL DEFAULT 0,
         player2_bomb_score INTEGER NOT NULL DEFAULT 0,
         player3_bomb_score INTEGER NOT NULL DEFAULT 0,
@@ -23,11 +28,7 @@ class GameRecordMigration {
         settlement_status TEXT NOT NULL CHECK(settlement_status IN ('PENDING', 'COMPLETED', 'DISPUTED')),
         
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        remarks TEXT,
-        
-        winner1_id TEXT,
-        winner2_id TEXT,
-        winning_team TEXT CHECK(winning_team IN ('TEAM_A', 'TEAM_B'))
+        remarks TEXT
       )
     ''');
   }
@@ -37,6 +38,10 @@ class GameRecordMigration {
       CREATE INDEX IF NOT EXISTS idx_game_records_game_id ON game_records(game_id);
       CREATE INDEX IF NOT EXISTS idx_game_records_created_at ON game_records(created_at);
       CREATE INDEX IF NOT EXISTS idx_game_records_settlement_status ON game_records(settlement_status);
+      CREATE INDEX IF NOT EXISTS idx_game_records_player1_id ON game_records(player1_id);
+      CREATE INDEX IF NOT EXISTS idx_game_records_player2_id ON game_records(player2_id);
+      CREATE INDEX IF NOT EXISTS idx_game_records_player3_id ON game_records(player3_id);
+      CREATE INDEX IF NOT EXISTS idx_game_records_player4_id ON game_records(player4_id);
     ''');
   }
 }

@@ -11,15 +11,106 @@ class DatabaseManager {
 
   final String _baseUrl = 'https://api.cloudflare.com/client/v4/accounts';
 
+  // 检查表是否存在
+  Future<bool> tableExists(String tableName) async {
+    try {
+      final result = await execute(
+        '''
+        SELECT name FROM sqlite_master 
+        WHERE type='table' AND name=?
+      ''',
+        [tableName],
+      );
+      return (result['results'] as List).isNotEmpty;
+    } catch (e) {
+      log('检查表是否存在失败: $e');
+      return false;
+    }
+  }
+
+  // 获取表结构
+  Future<List<Map<String, dynamic>>> getTableStructure(String tableName) async {
+    try {
+      final result = await execute('''
+        PRAGMA table_info($tableName)
+      ''');
+      return (result['results'] as List).cast<Map<String, dynamic>>();
+    } catch (e) {
+      log('获取表结构失败: $e');
+      return [];
+    }
+  }
+
   // 初始化数据库
   Future<void> initialize() async {
     try {
-      await GameRecordMigration.createTable(this);
-      await GameRecordMigration.createIndexes(this);
+      final exists = await tableExists('game_records');
+      if (!exists) {
+        await GameRecordMigration.createTable(this);
+        await GameRecordMigration.createIndexes(this);
+        log('创建新表成功');
+      } else {
+        await _migrateTable();
+        log('表迁移成功');
+      }
       await _verifyTableStructure();
       log('数据库初始化成功');
     } catch (e) {
       log('数据库初始化失败: $e');
+      rethrow;
+    }
+  }
+
+  // 迁移表结构
+  Future<void> _migrateTable() async {
+    try {
+      final columns = await getTableStructure('game_records');
+      final columnNames = columns.map((c) => c['name'] as String).toSet();
+
+      // 删除不需要的列
+      if (columnNames.contains('winner1_id')) {
+        await execute('ALTER TABLE game_records DROP COLUMN winner1_id');
+      }
+      if (columnNames.contains('winner2_id')) {
+        await execute('ALTER TABLE game_records DROP COLUMN winner2_id');
+      }
+      if (columnNames.contains('winning_team')) {
+        await execute('ALTER TABLE game_records DROP COLUMN winning_team');
+      }
+
+      // 添加缺失的列
+      if (!columnNames.contains('player1_id')) {
+        await execute(
+          'ALTER TABLE game_records ADD COLUMN player1_id TEXT NOT NULL DEFAULT ""',
+        );
+      }
+      if (!columnNames.contains('player2_id')) {
+        await execute(
+          'ALTER TABLE game_records ADD COLUMN player2_id TEXT NOT NULL DEFAULT ""',
+        );
+      }
+      if (!columnNames.contains('player3_id')) {
+        await execute(
+          'ALTER TABLE game_records ADD COLUMN player3_id TEXT NOT NULL DEFAULT ""',
+        );
+      }
+      if (!columnNames.contains('player4_id')) {
+        await execute(
+          'ALTER TABLE game_records ADD COLUMN player4_id TEXT NOT NULL DEFAULT ""',
+        );
+      }
+
+      // 创建缺失的索引
+      await execute('''
+        CREATE INDEX IF NOT EXISTS idx_game_records_player1_id ON game_records(player1_id);
+        CREATE INDEX IF NOT EXISTS idx_game_records_player2_id ON game_records(player2_id);
+        CREATE INDEX IF NOT EXISTS idx_game_records_player3_id ON game_records(player3_id);
+        CREATE INDEX IF NOT EXISTS idx_game_records_player4_id ON game_records(player4_id);
+      ''');
+
+      log('表迁移完成');
+    } catch (e) {
+      log('表迁移失败: $e');
       rethrow;
     }
   }
