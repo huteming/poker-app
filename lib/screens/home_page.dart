@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'score_page.dart';
+import 'score_page/score_page.dart';
 import 'players_page.dart';
 
 class HomePage extends StatefulWidget {

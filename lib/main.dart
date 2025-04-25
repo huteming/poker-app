@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/home_page.dart';
 import 'config/database_config.dart';
 import 'database/database_manager.dart';
+import 'database/player_dao.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,10 @@ void main() async {
     DatabaseConfig.validate();
     await DatabaseManager().initialize();
     log('数据库迁移成功');
+
+    // 预加载玩家列表到缓存
+    await PlayerDao().findAll();
+    log('玩家列表预加载成功');
   } catch (e) {
     if (e.toString().contains('Cloudflare configuration is missing')) {
       log('数据库配置验证失败: $e');

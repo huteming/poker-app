@@ -12,7 +12,7 @@ class ScorePageEmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('本局积分')),
+      appBar: AppBar(title: const Text('对战积分')),
       body: _buildEmptyState(context),
     );
   }
@@ -23,21 +23,7 @@ class ScorePageEmptyView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.group_outlined, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            '暂无玩家',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '请先添加玩家开始游戏',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple,
