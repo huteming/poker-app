@@ -451,33 +451,31 @@ class _ScorePageState extends State<ScorePage> {
                 tooltip: '刷新列表',
                 onPressed: _refreshRecords,
               ),
-          IconButton(
-            icon: const Icon(Icons.group_add),
-            tooltip: '添加玩家',
-            onPressed: () async {
-              final List<Player>? result = await Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AddPlayerPage()),
-              );
-              if (result != null) {
-                setState(() {
-                  players =
-                      result
-                          .map(
-                            (player) => PlayerScore(
-                              name: player.name,
-                              winRate: 0.0,
-                              scores: [],
-                              bombCounts: [],
-                              avatarText: player.avatar,
-                              recordTimes: [],
-                              gameTypes: [],
-                              recordIds: [], // 添加记录ID列表
-                            ),
-                          )
-                          .toList();
-                });
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: '更多选项',
+            onSelected: (String value) {
+              switch (value) {
+                case 'add_player':
+                  _navigateToAddPlayer();
+                  break;
+                // 可以添加更多选项
               }
             },
+            itemBuilder:
+                (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'add_player',
+                    child: Row(
+                      children: [
+                        Icon(Icons.group_add, color: Colors.black54),
+                        SizedBox(width: 8),
+                        Text('添加玩家'),
+                      ],
+                    ),
+                  ),
+                  // 可以在此处添加更多菜单项
+                ],
           ),
         ],
       ),
@@ -529,5 +527,30 @@ class _ScorePageState extends State<ScorePage> {
         ],
       ),
     );
+  }
+
+  void _navigateToAddPlayer() async {
+    final List<Player>? result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const AddPlayerPage()));
+    if (result != null) {
+      setState(() {
+        players =
+            result
+                .map(
+                  (player) => PlayerScore(
+                    name: player.name,
+                    winRate: 0.0,
+                    scores: [],
+                    bombCounts: [],
+                    avatarText: player.avatar,
+                    recordTimes: [],
+                    gameTypes: [],
+                    recordIds: [],
+                  ),
+                )
+                .toList();
+      });
+    }
   }
 }
