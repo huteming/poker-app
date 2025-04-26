@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import '../models/db_player.dart';
 import '../database/player_dao.dart';
@@ -8,12 +9,14 @@ class PlayerProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   final PlayerDao _playerDao = PlayerDao();
+  bool _initialized = false;
 
   // 获取器
   List<Player> get players => _players;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasPlayers => _players.isNotEmpty;
+  bool get isInitialized => _initialized;
 
   // 构造函数，初始化时自动加载玩家列表
   PlayerProvider() {
@@ -32,8 +35,12 @@ class PlayerProvider with ChangeNotifier {
       final players = await _playerDao.findAll(forceRefresh: forceRefresh);
       _players = players;
       _error = null;
+      _initialized = true;
     } catch (e) {
       _error = e.toString();
+      log('加载玩家列表失败: $e');
+      // 如果数据库未初始化，我们不抛出异常，而是返回空列表
+      _players = [];
     } finally {
       _isLoading = false;
       notifyListeners();

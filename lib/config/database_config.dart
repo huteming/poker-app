@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DatabaseConfig {
@@ -10,13 +12,17 @@ class DatabaseConfig {
   }
 
   static void validate() {
-    if (!isValid) {
-      throw Exception('''
+    if (isValid) {
+      log('数据库配置验证成功');
+      return;
+    }
+
+    final message = '''
         Cloudflare configuration is missing. Please check your .env file:
         - CLOUDFLARE_ACCOUNT_ID: ${accountId.isEmpty ? 'missing' : 'set'}
         - CLOUDFLARE_API_TOKEN: ${apiToken.isEmpty ? 'missing' : 'set'}
         - CLOUDFLARE_DATABASE_ID: ${databaseId.isEmpty ? 'missing' : 'set'}
-      ''');
-    }
+      ''';
+    log('数据库配置验证失败: $message');
   }
 }

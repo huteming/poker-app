@@ -24,6 +24,13 @@ class GameRecordDao {
     }
 
     try {
+      // 首先检查表是否存在
+      final tableExists = await _db.tableExists('game_records');
+      if (!tableExists) {
+        log('游戏记录表不存在，可能需要执行数据库迁移');
+        return [];
+      }
+
       final res = await _db.execute(
         'SELECT * FROM game_records WHERE settlement_status = "PENDING" ORDER BY created_at DESC',
       );
@@ -46,6 +53,13 @@ class GameRecordDao {
     Map<String, int> bombScores,
   ) async {
     try {
+      // 检查表是否存在
+      final tableExists = await _db.tableExists('game_records');
+      if (!tableExists) {
+        log('游戏记录表不存在，无法插入记录');
+        return 0;
+      }
+
       if (playerIds.length != 4) {
         log('插入记录失败: 需要正好4名玩家');
         return 0;
@@ -110,6 +124,13 @@ class GameRecordDao {
 
   Future<bool> deleteRecord(int id) async {
     try {
+      // 检查表是否存在
+      final tableExists = await _db.tableExists('game_records');
+      if (!tableExists) {
+        log('游戏记录表不存在，无法删除记录');
+        return false;
+      }
+
       await _db.execute('DELETE FROM game_records WHERE id = ?', [id]);
 
       // 删除后清除缓存
@@ -124,6 +145,13 @@ class GameRecordDao {
 
   Future<int> settleAllPendingRecords() async {
     try {
+      // 检查表是否存在
+      final tableExists = await _db.tableExists('game_records');
+      if (!tableExists) {
+        log('游戏记录表不存在，无法结算记录');
+        return 0;
+      }
+
       final now = DateTime.now();
       final res = await _db.execute(
         '''
@@ -147,6 +175,13 @@ class GameRecordDao {
 
   Future<List<DbGameRecord>> getPlayerRecords(String playerName) async {
     try {
+      // 检查表是否存在
+      final tableExists = await _db.tableExists('game_records');
+      if (!tableExists) {
+        log('游戏记录表不存在，无法获取玩家记录');
+        return [];
+      }
+
       // 查询包含该玩家的所有游戏记录
       final res = await _db.execute(
         '''
@@ -172,6 +207,19 @@ class GameRecordDao {
 
   Future<Map<String, dynamic>> getPlayerStatistics(String playerName) async {
     try {
+      // 检查表是否存在
+      final tableExists = await _db.tableExists('game_records');
+      if (!tableExists) {
+        log('游戏记录表不存在，无法获取玩家统计信息');
+        return {
+          'totalGames': 0,
+          'wins': 0,
+          'winRate': 0.0,
+          'totalScore': 0,
+          'totalBombScore': 0,
+        };
+      }
+
       // 查询包含该玩家的所有游戏记录（包括已结算和未结算的）
       final res = await _db.execute(
         '''

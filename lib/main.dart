@@ -1,11 +1,8 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_page.dart';
 import 'config/database_config.dart';
-import 'database/database_manager.dart';
 import 'providers/player_provider.dart';
 
 void main() async {
@@ -14,23 +11,7 @@ void main() async {
   // 加载环境变量
   await dotenv.load(fileName: ".env");
 
-  // 验证数据库配置
-  try {
-    DatabaseConfig.validate();
-    await DatabaseManager().initialize();
-    log('数据库迁移成功');
-    
-    // 不需要在这里预加载玩家列表，因为PlayerProvider会自动加载
-    // await PlayerDao().findAll();
-    // log('玩家列表预加载成功');
-  } catch (e) {
-    if (e.toString().contains('Cloudflare configuration is missing')) {
-      log('数据库配置验证失败: $e');
-    } else {
-      log('数据库迁移失败: $e');
-    }
-    rethrow;
-  }
+  DatabaseConfig.validate();
 
   runApp(const MyApp());
 }
@@ -41,9 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => PlayerProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => PlayerProvider())],
       child: MaterialApp(
         title: '双扣积分',
         theme: ThemeData(
