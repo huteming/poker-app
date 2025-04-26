@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:poker/models/db_player.dart';
 import 'package:poker/models/player_score.dart';
 import 'package:poker/models/game_record.dart';
@@ -10,7 +11,7 @@ import 'package:poker/screens/add_player_page.dart';
 import 'package:poker/screens/game_detail_page.dart';
 import 'package:poker/screens/players_page.dart';
 import 'package:poker/database/game_record_dao.dart';
-import 'package:poker/database/player_dao.dart';
+import 'package:poker/providers/player_provider.dart';
 import 'widgets/loading_view.dart';
 import 'widgets/empty_view.dart';
 
@@ -23,9 +24,7 @@ class ScorePage extends StatefulWidget {
 
 class _ScorePageState extends State<ScorePage> {
   List<PlayerScore> players = [];
-  List<Player> _allPlayers = [];
   final GameRecordDao _gameRecordDao = GameRecordDao();
-  final PlayerDao _playerDao = PlayerDao();
   bool _isLoading = true;
   bool _isRefreshing = false;
 
@@ -40,18 +39,12 @@ class _ScorePageState extends State<ScorePage> {
       _isLoading = true;
     });
 
-    // 顺序加载数据，不再需要 try-catch
-    await _loadPlayers();
+    // 从Provider获取玩家列表，不再需要单独加载
     await _loadGameRecords();
 
     setState(() {
       _isLoading = false;
     });
-  }
-
-  Future<void> _loadPlayers() async {
-    // 直接获取玩家列表，DAO 层会处理错误并返回空列表
-    _allPlayers = await _playerDao.findAll();
   }
 
   Future<void> _loadGameRecords() async {
@@ -71,7 +64,9 @@ class _ScorePageState extends State<ScorePage> {
 
     // 刷新数据，DAO 层会处理错误
     final records = await _gameRecordDao.getPendingRecords();
-    await _loadPlayers(); // 同时刷新玩家数据
+
+    // 使用Provider刷新玩家数据
+    await Provider.of<PlayerProvider>(context, listen: false).refreshPlayers();
 
     if (mounted) {
       setState(() {
@@ -92,6 +87,10 @@ class _ScorePageState extends State<ScorePage> {
       return;
     }
 
+    // 从Provider获取玩家列表
+    final allPlayers =
+        Provider.of<PlayerProvider>(context, listen: false).players;
+
     // 收集所有参与游戏的玩家ID
     final playerIds = <String>{};
     for (var record in records) {
@@ -101,8 +100,8 @@ class _ScorePageState extends State<ScorePage> {
     // 为每个玩家创建得分记录
     final playerScores = <PlayerScore>[];
     for (var playerId in playerIds) {
-      // 查找玩家信息
-      final player = _allPlayers.firstWhere(
+      // 从Provider查找玩家信息
+      final player = allPlayers.firstWhere(
         (p) => p.name == playerId,
         orElse:
             () => Player(
@@ -238,7 +237,11 @@ class _ScorePageState extends State<ScorePage> {
   }
 
   void _addNewRecord() async {
-    if (players.isEmpty && _allPlayers.isEmpty) {
+    // 从Provider获取玩家列表
+    final allPlayers =
+        Provider.of<PlayerProvider>(context, listen: false).players;
+
+    if (players.isEmpty && allPlayers.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('请先添加玩家')));
@@ -247,7 +250,7 @@ class _ScorePageState extends State<ScorePage> {
 
     final playerList =
         players.isEmpty
-            ? _allPlayers
+            ? allPlayers
                 .map(
                   (player) => PlayerScore(
                     name: player.name,
@@ -286,10 +289,12 @@ class _ScorePageState extends State<ScorePage> {
         try {
           // 准备玩家列表和得分数据
           final playerIds = scores.keys.toList();
+          final allPlayers =
+              Provider.of<PlayerProvider>(context, listen: false).players;
 
           // 确保有4个玩家
-          while (playerIds.length < 4) {
-            playerIds.add(_allPlayers[playerIds.length].name);
+          while (playerIds.length < 4 && allPlayers.length > playerIds.length) {
+            playerIds.add(allPlayers[playerIds.length].name);
           }
 
           // 保存记录到数据库
