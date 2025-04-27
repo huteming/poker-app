@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../add_player_page.dart';
 import '../../../models/db_player.dart';
 import '../../../models/player_score.dart';
+import '../../../screens/add_player_page/add_player_page.dart';
 
 /// 显示无玩家/记录状态的视图组件
 class ScorePageEmptyView extends StatelessWidget {

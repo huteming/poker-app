@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/db_player.dart';
 import '../models/db_game_record.dart';
 import '../models/player_statistics.dart';
 import '../database/game_record_dao.dart';
@@ -7,8 +6,7 @@ import '../database/game_record_dao.dart';
 class PlayerDetailPage extends StatefulWidget {
   final PlayerStatistics playerStats;
 
-  const PlayerDetailPage({Key? key, required this.playerStats})
-    : super(key: key);
+  const PlayerDetailPage({super.key, required this.playerStats});
 
   @override
   State<PlayerDetailPage> createState() => _PlayerDetailPageState();
@@ -46,9 +44,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
         _isLoading = false;
 
         // 更新统计信息
-        if (_playerStats == null) {
-          _playerStats = playerStats;
-        }
+        _playerStats ??= playerStats;
       });
     } catch (e) {
       setState(() {
@@ -56,6 +52,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
       });
 
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('加载对局记录失败: $e')));
     }
@@ -270,10 +267,8 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
   }
 
   Widget _buildGameRecord(DbGameRecord record, String playerName) {
-    // 实际应用中根据记录计算玩家的得分
-    // 这里使用示例数据
-    final score = record.getPlayerScore(playerName);
-    final bombScore = record.getPlayerBombScore(playerName);
+    final score = 0;
+    final bombScore = 0;
     final isWin = score > 0;
 
     return Card(

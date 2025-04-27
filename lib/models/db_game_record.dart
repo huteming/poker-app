@@ -1,27 +1,32 @@
 class DbGameRecord {
   final int id;
-  final String gameId;
-  final DateTime createdAt;
-  final String player1Id;
-  final String player2Id;
-  final String player3Id;
-  final String player4Id;
+
+  final int player1Id;
+  final int player2Id;
+  final int player3Id;
+  final int player4Id;
+
   final int player1BombScore;
   final int player2BombScore;
   final int player3BombScore;
   final int player4BombScore;
-  final String gameResultType;
+
   final int player1FinalScore;
   final int player2FinalScore;
   final int player3FinalScore;
   final int player4FinalScore;
+
+  // DOUBLE_WIN, SINGLE_WIN, DRAW
+  final String gameResultType;
+  // PENDING, COMPLETED
   final String settlementStatus;
+
+  final DateTime createdAt;
   final DateTime updatedAt;
   final String? remarks;
 
   DbGameRecord({
     required this.id,
-    required this.gameId,
     required this.createdAt,
     required this.player1Id,
     required this.player2Id,
@@ -44,12 +49,11 @@ class DbGameRecord {
   factory DbGameRecord.fromMap(Map<String, dynamic> map) {
     return DbGameRecord(
       id: map['id'] as int,
-      gameId: map['game_id'] as String,
       createdAt: DateTime.parse(map['created_at'] as String),
-      player1Id: map['player1_id'] as String,
-      player2Id: map['player2_id'] as String,
-      player3Id: map['player3_id'] as String,
-      player4Id: map['player4_id'] as String,
+      player1Id: map['player1_id'] as int,
+      player2Id: map['player2_id'] as int,
+      player3Id: map['player3_id'] as int,
+      player4Id: map['player4_id'] as int,
       player1BombScore: map['player1_bomb_score'] as int,
       player2BombScore: map['player2_bomb_score'] as int,
       player3BombScore: map['player3_bomb_score'] as int,
@@ -68,7 +72,6 @@ class DbGameRecord {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'game_id': gameId,
       'created_at': createdAt.toIso8601String(),
       'player1_id': player1Id,
       'player2_id': player2Id,
@@ -90,7 +93,7 @@ class DbGameRecord {
   }
 
   // 辅助方法，获取玩家分数
-  int getPlayerScore(String playerId) {
+  int getPlayerScore(int playerId) {
     if (playerId == player1Id) return player1FinalScore;
     if (playerId == player2Id) return player2FinalScore;
     if (playerId == player3Id) return player3FinalScore;
@@ -99,7 +102,7 @@ class DbGameRecord {
   }
 
   // 辅助方法，获取玩家炸弹分数
-  int getPlayerBombScore(String playerId) {
+  int getPlayerBombScore(int playerId) {
     if (playerId == player1Id) return player1BombScore;
     if (playerId == player2Id) return player2BombScore;
     if (playerId == player3Id) return player3BombScore;
@@ -108,27 +111,24 @@ class DbGameRecord {
   }
 
   // 获取所有玩家ID
-  List<String> getAllPlayerIds() {
+  List<int> getAllPlayerIds() {
     return [player1Id, player2Id, player3Id, player4Id];
   }
 
-  // 获取赢家ID
-  List<String> getWinnerIds() {
-    final winners = <String>[];
-    if (player1FinalScore > 0) winners.add(player1Id);
-    if (player2FinalScore > 0) winners.add(player2Id);
-    if (player3FinalScore > 0) winners.add(player3Id);
-    if (player4FinalScore > 0) winners.add(player4Id);
-    return winners;
+  // 获取胜负类型文字
+  String getGameResultTypeText() {
+    if (gameResultType == 'DOUBLE_WIN') return '双扣';
+    if (gameResultType == 'SINGLE_WIN') return '单扣';
+    if (gameResultType == 'DRAW') return '平扣';
+    return '';
   }
 
-  // 获取输家ID
-  List<String> getLoserIds() {
-    final losers = <String>[];
-    if (player1FinalScore <= 0) losers.add(player1Id);
-    if (player2FinalScore <= 0) losers.add(player2Id);
-    if (player3FinalScore <= 0) losers.add(player3Id);
-    if (player4FinalScore <= 0) losers.add(player4Id);
-    return losers;
+  // 获取玩家胜利状态
+  int isWin(int playerId) {
+    if (playerId == player1Id) return 1;
+    if (playerId == player2Id) return 1;
+    if (playerId == player3Id) return -1;
+    if (playerId == player4Id) return -1;
+    return 0;
   }
 }

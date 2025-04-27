@@ -1,41 +1,52 @@
 import 'package:flutter/material.dart';
-import 'player_avatar.dart';
+import 'package:provider/provider.dart';
+import '../../../../widgets/player_avatar.dart';
+import '../../../../providers/player_provider.dart';
 
 class BombScoreSelector extends StatelessWidget {
-  final List<String> selectedPlayers;
-  final Map<String, int> bombScores;
-  final Function(String, int) onScoreChanged;
+  final List<int> selectedPlayerIds;
+  final Map<int, int> bombScores;
+  final Function(int, int) onChanged;
 
   const BombScoreSelector({
-    Key? key,
-    required this.selectedPlayers,
+    super.key,
+    required this.selectedPlayerIds,
     required this.bombScores,
-    required this.onScoreChanged,
-  }) : super(key: key);
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (selectedPlayers.isEmpty) return const SizedBox.shrink();
+    if (selectedPlayerIds.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    final players =
+        selectedPlayerIds
+            .map((playerId) => playerProvider.findPlayerById(playerId))
+            .toList();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children:
-            selectedPlayers.map((player) {
+            players.map((player) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    PlayerAvatar(name: player, isSelected: true),
+                    PlayerAvatar(name: player.name, isSelected: true),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Row(
                         children: List.generate(7, (index) {
                           final score = index + 4;
-                          final isSelected = bombScores[player] == score;
+                          final isSelected = bombScores[player.id] == score;
+
                           return Expanded(
                             child: GestureDetector(
-                              onTap: () => onScoreChanged(player, score),
+                              onTap: () => onChanged(player.id, score),
                               child: Container(
                                 margin: const EdgeInsets.symmetric(
                                   horizontal: 2,

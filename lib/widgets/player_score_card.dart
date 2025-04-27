@@ -4,7 +4,7 @@ import '../models/player_score.dart';
 class PlayerScoreCard extends StatelessWidget {
   final PlayerScore player;
 
-  const PlayerScoreCard({Key? key, required this.player}) : super(key: key);
+  const PlayerScoreCard({super.key, required this.player});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class PlayerScoreCard extends StatelessWidget {
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

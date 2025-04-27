@@ -17,10 +17,10 @@ class PlayerScore {
     List<DateTime>? recordTimes,
     List<int>? recordIds,
     required this.avatarText,
-  }) : this.bombCounts = bombCounts ?? [],
-       this.gameTypes = gameTypes ?? [],
-       this.recordTimes = recordTimes ?? [],
-       this.recordIds = recordIds ?? [];
+  }) : bombCounts = bombCounts ?? [],
+       gameTypes = gameTypes ?? [],
+       recordTimes = recordTimes ?? [],
+       recordIds = recordIds ?? [];
 
   int get totalScore => scores.fold(0, (sum, score) => sum + score);
 

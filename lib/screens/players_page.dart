@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/db_player.dart';
 import '../database/player_dao.dart';
 import '../database/game_record_dao.dart';
 import '../models/player_statistics.dart';
@@ -7,7 +6,7 @@ import 'history_page.dart';
 import 'player_detail_page.dart';
 
 class PlayersPage extends StatefulWidget {
-  const PlayersPage({Key? key}) : super(key: key);
+  const PlayersPage({super.key});
 
   @override
   State<PlayersPage> createState() => _PlayersPageState();
@@ -79,6 +78,7 @@ class _PlayersPageState extends State<PlayersPage> {
       });
 
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('加载玩家失败: $e')));
     }

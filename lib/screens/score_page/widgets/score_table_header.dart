@@ -1,24 +1,47 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import '../models/player_score.dart';
+
+import '../../../models/db_player.dart';
+import '../../../models/db_game_record.dart';
 
 class ScoreTableHeader extends StatelessWidget {
-  final List<PlayerScore> players;
+  final List<Player> players;
+  final List<DbGameRecord> records;
 
-  const ScoreTableHeader({Key? key, required this.players}) : super(key: key);
+  const ScoreTableHeader({
+    super.key,
+    required this.players,
+    required this.records,
+  });
 
-  Color _getAvatarColor(String name) {
-    switch (name) {
-      case '钱':
-        return Colors.amber;
-      case '孙':
-        return Colors.pink;
-      default:
-        return Colors.grey.shade300;
+  calcPlayerStat(Player player) {
+    var totalScore = 0;
+    var winCount = 0;
+    var loseCount = 0;
+
+    for (var record in records) {
+      totalScore += record.getPlayerScore(player.id);
+      if (record.isWin(player.id) == 1) {
+        winCount++;
+      } else if (record.isWin(player.id) == -1) {
+        loseCount++;
+      }
     }
+
+    String winRate;
+    if (winCount + loseCount == 0) {
+      winRate = '0%';
+    } else {
+      winRate = '${(winCount / (winCount + loseCount) * 100).toInt()}%';
+    }
+
+    return {'totalScore': totalScore, 'winRate': winRate};
   }
 
   @override
   Widget build(BuildContext context) {
+    log(players.toString());
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
@@ -28,13 +51,15 @@ class ScoreTableHeader extends StatelessWidget {
       child: Row(
         children:
             players.map((player) {
+              final stat = calcPlayerStat(player);
+
               return Expanded(
                 child: Column(
                   children: [
                     CircleAvatar(
-                      backgroundColor: _getAvatarColor(player.name),
+                      backgroundColor: Colors.amber,
                       child: Text(
-                        player.avatarText,
+                        player.name,
                         style: const TextStyle(
                           color: Colors.black87,
                           fontSize: 16,
@@ -43,17 +68,17 @@ class ScoreTableHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      player.totalScore.toString(),
+                      '${stat['totalScore']}',
                       style: TextStyle(
                         color:
-                            player.totalScore >= 0 ? Colors.green : Colors.red,
+                            stat['totalScore'] >= 0 ? Colors.green : Colors.red,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${(player.winRate * 100).toInt()}%',
+                      stat['winRate'],
                       style: const TextStyle(
                         color: Colors.purple,
                         fontSize: 14,

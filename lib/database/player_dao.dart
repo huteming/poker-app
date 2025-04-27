@@ -1,4 +1,4 @@
-import 'dart:developer';
+import 'package:logging/logging.dart';
 
 import '../models/db_player.dart';
 import 'database_manager.dart';
@@ -9,6 +9,7 @@ class PlayerDao {
   PlayerDao._internal();
 
   final DatabaseManager _db = DatabaseManager();
+  final log = Logger('PlayerDao');
 
   // 缓存相关
   List<Player>? _cachedPlayers;
@@ -27,28 +28,16 @@ class PlayerDao {
   // 从数据库获取玩家列表并更新缓存
   Future<List<Player>> _fetchFromDatabase() async {
     try {
-      // 首先检查表是否存在
-      final tableExists = await _db.tableExists('players');
-      if (!tableExists) {
-        log('玩家表不存在，可能需要执行数据库迁移');
-        return _cachedPlayers ?? [];
-      }
-
       final res = await _db.execute('SELECT * FROM players ORDER BY name');
       final List<dynamic> results = res['results'] ?? [];
 
       _cachedPlayers = results.map((map) => Player.fromMap(map)).toList();
       _lastCacheTime = DateTime.now();
-      log('已从数据库加载玩家列表: ${_cachedPlayers!.length}个玩家');
+      log.info('已从数据库加载玩家列表: ${_cachedPlayers!.length}个玩家');
       return _cachedPlayers!;
     } catch (e) {
-      log('获取玩家列表失败，详细错误: $e');
-      log('错误堆栈: ${StackTrace.current}');
-      // 如果加载失败但有缓存，返回缓存内容
-      if (_cachedPlayers != null) {
-        log('返回缓存的玩家列表: ${_cachedPlayers!.length}个玩家');
-        return _cachedPlayers!;
-      }
+      log.warning('获取玩家列表失败，详细错误: $e');
+      log.warning('错误堆栈: ${StackTrace.current}');
       return [];
     }
   }

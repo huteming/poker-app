@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import '../models/db_player.dart';
-import '../widgets/player_selection_list.dart';
+import '../../models/db_player.dart';
+import 'widgets/player_selection_list.dart';
 
 class AddPlayerPage extends StatefulWidget {
-  const AddPlayerPage({Key? key}) : super(key: key);
+  final List<Player> gamingPlayers;
+
+  const AddPlayerPage({super.key, this.gamingPlayers = const []});
 
   @override
   State<AddPlayerPage> createState() => _AddPlayerPageState();
 }
 
 class _AddPlayerPageState extends State<AddPlayerPage> {
-  List<Player> selectedPlayers = [];
+  List<Player> newPlayers = [];
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +22,11 @@ class _AddPlayerPageState extends State<AddPlayerPage> {
         children: [
           Expanded(
             child: PlayerSelectionList(
-              selectedPlayers: selectedPlayers,
-              onPlayersSelected: (players) {
+              gamingPlayers: widget.gamingPlayers,
+              newPlayers: newPlayers,
+              onPlayersSelected: (sselectedPlayers) {
                 setState(() {
-                  selectedPlayers = players;
+                  newPlayers = sselectedPlayers;
                 });
               },
             ),
@@ -41,15 +44,15 @@ class _AddPlayerPageState extends State<AddPlayerPage> {
                   ),
                 ),
                 onPressed:
-                    selectedPlayers.isEmpty
+                    newPlayers.isEmpty
                         ? null
                         : () {
-                          Navigator.of(context).pop(selectedPlayers);
+                          Navigator.of(context).pop(newPlayers);
                         },
                 child: Text(
-                  selectedPlayers.isEmpty
+                  newPlayers.isEmpty
                       ? '请选择玩家'
-                      : '确认添加 ${selectedPlayers.length} 位玩家',
+                      : '确认添加 ${newPlayers.length} 位玩家',
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),

@@ -1,73 +1,77 @@
 import 'package:flutter/material.dart';
-import '../widgets/player_avatar.dart';
-import '../widgets/score_type_selector.dart';
-import '../widgets/player_selector.dart';
-import '../widgets/bomb_score_selector.dart';
-import '../utils/score_calculator.dart';
-import '../models/player_score.dart';
-import '../models/db_player.dart';
-import '../database/game_record_dao.dart';
+import '../../utils/score_calculator.dart';
+import '../../models/db_player.dart';
+import '../../database/game_record_dao.dart';
+import 'widgets/game_result_selector.dart';
+import 'widgets/player_selector.dart';
+import 'widgets/bomb_score_selector.dart';
 
 class AddRecordPage extends StatefulWidget {
-  final List<dynamic> players;
+  final List<Player> gamingPlayers;
 
-  const AddRecordPage({Key? key, required this.players}) : super(key: key);
+  const AddRecordPage({super.key, required this.gamingPlayers});
 
   @override
   State<AddRecordPage> createState() => _AddRecordPageState();
 }
 
 class _AddRecordPageState extends State<AddRecordPage> {
-  final List<String> selectedPlayers = [];
-  final Map<String, int> bombScores = {};
-  String selectedScoreType = '双扣';
   final GameRecordDao _gameRecordDao = GameRecordDao();
+
+  List<int> selectedPlayerIds = [];
+  Map<int, int> bombScores = {};
+  // DOUBLE_WIN, SINGLE_WIN, DRAW
+  String gameResultType = 'DOUBLE_WIN';
   bool _isSubmitting = false;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void _handlePlayerSelection(List<String> selected) {
+  void _onSelectedPlayerIdsChange(List<int> newSelectedPlayerIds) {
     setState(() {
-      // 移除不再选中的玩家的炸弹分数
-      bombScores.removeWhere((player, _) => !selected.contains(player));
-      selectedPlayers.clear();
-      selectedPlayers.addAll(selected);
+      selectedPlayerIds = newSelectedPlayerIds;
+
+      final Map<int, int> newBombScores = {};
+      for (var playerId in selectedPlayerIds) {
+        newBombScores[playerId] = bombScores[playerId] ?? 4;
+      }
+
+      bombScores = newBombScores;
     });
   }
 
-  void _handleBombScoreChange(String player, int score) {
+  void _onBombScoreChange(int playerId, int score) {
     setState(() {
-      bombScores[player] = score;
+      bombScores[playerId] = score;
     });
   }
 
-  Future<void> _handleSubmit() async {
-    if (selectedPlayers.length != 4) return;
+  Future<void> _onSubmit() async {
+    if (selectedPlayerIds.length != 4) {
+      return;
+    }
 
     setState(() {
       _isSubmitting = true;
     });
 
     try {
-      final scores = createGameScores(
-        selectedScoreType,
-        selectedPlayers,
+      final finalScores = createGameScores(
+        gameResultType,
+        selectedPlayerIds,
         bombScores,
       );
 
-      // 直接保存到数据库
       await _gameRecordDao.insertRecord(
-        selectedScoreType,
-        selectedPlayers,
-        scores,
+        selectedPlayerIds,
         bombScores,
+        finalScores,
+        gameResultType,
       );
 
       // 返回成功结果
       if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('记录已成功保存')));
+
         Navigator.of(context).pop({'success': true});
       }
     } catch (e) {
@@ -75,29 +79,16 @@ class _AddRecordPageState extends State<AddRecordPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('保存记录失败：$e')));
-        setState(() {
-          _isSubmitting = false;
-        });
       }
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // 提取所有玩家名称
-    final playerNames =
-        widget.players
-            .map((p) {
-              if (p is PlayerScore) {
-                return p.name;
-              } else if (p is Player) {
-                return p.name;
-              }
-              return '';
-            })
-            .where((name) => name.isNotEmpty)
-            .toList();
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -122,12 +113,14 @@ class _AddRecordPageState extends State<AddRecordPage> {
             )
           else
             TextButton(
-              onPressed: selectedPlayers.length == 4 ? _handleSubmit : null,
+              onPressed: _onSubmit,
               child: Text(
                 '确认提交',
                 style: TextStyle(
                   color:
-                      selectedPlayers.length == 4 ? Colors.purple : Colors.grey,
+                      selectedPlayerIds.length == 4
+                          ? Colors.purple
+                          : Colors.grey,
                 ),
               ),
             ),
@@ -145,11 +138,11 @@ class _AddRecordPageState extends State<AddRecordPage> {
               ),
             ),
             PlayerSelector(
-              players: playerNames,
-              selectedPlayers: selectedPlayers,
-              onSelectionChanged: _handlePlayerSelection,
+              players: widget.gamingPlayers,
+              selectedPlayerIds: selectedPlayerIds,
+              onChanged: _onSelectedPlayerIdsChange,
             ),
-            if (selectedPlayers.isNotEmpty) ...[
+            if (selectedPlayerIds.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
                 child: Text(
@@ -158,9 +151,9 @@ class _AddRecordPageState extends State<AddRecordPage> {
                 ),
               ),
               BombScoreSelector(
-                selectedPlayers: selectedPlayers,
+                selectedPlayerIds: selectedPlayerIds,
                 bombScores: bombScores,
-                onScoreChanged: _handleBombScoreChange,
+                onChanged: _onBombScoreChange,
               ),
             ],
             const Padding(
@@ -170,11 +163,11 @@ class _AddRecordPageState extends State<AddRecordPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
-            ScoreTypeSelector(
-              selectedType: selectedScoreType,
-              onTypeChanged: (type) {
+            GameResultSelector(
+              gameResultType: gameResultType,
+              onGameResultTypeChanged: (type) {
                 setState(() {
-                  selectedScoreType = type;
+                  gameResultType = type;
                 });
               },
             ),

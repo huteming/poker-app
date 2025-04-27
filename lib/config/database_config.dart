@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logging/logging.dart';
 
 class DatabaseConfig {
   static String get accountId => dotenv.env['CLOUDFLARE_ACCOUNT_ID'] ?? '';
@@ -11,10 +10,12 @@ class DatabaseConfig {
     return accountId.isNotEmpty && apiToken.isNotEmpty && databaseId.isNotEmpty;
   }
 
-  static void validate() {
+  static bool validate() {
+    final log = Logger('DatabaseConfig');
+
     if (isValid) {
-      log('数据库配置验证成功');
-      return;
+      log.info('数据库配置验证成功');
+      return true;
     }
 
     final message = '''
@@ -23,6 +24,7 @@ class DatabaseConfig {
         - CLOUDFLARE_API_TOKEN: ${apiToken.isEmpty ? 'missing' : 'set'}
         - CLOUDFLARE_DATABASE_ID: ${databaseId.isEmpty ? 'missing' : 'set'}
       ''';
-    log('数据库配置验证失败: $message');
+    log.warning('数据库配置验证失败: $message');
+    return false;
   }
 }

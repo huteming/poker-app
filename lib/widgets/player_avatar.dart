@@ -8,13 +8,13 @@ class PlayerAvatar extends StatelessWidget {
   final String? avatarText;
 
   const PlayerAvatar({
-    Key? key,
+    super.key,
     required this.name,
     this.isSelected = false,
     this.isWinner = false,
     this.selectedIndex = 0,
     this.avatarText,
-  }) : super(key: key);
+  });
 
   Color _getBackgroundColor() {
     if (!isSelected) return Colors.grey.shade200;

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'screens/home_page.dart';
 import 'config/database_config.dart';
 import 'providers/player_provider.dart';
+import 'screens/home/home.dart';
+import 'utils/setup_log.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 加载环境变量
+  setupLog();
+
   await dotenv.load(fileName: ".env");
 
-  DatabaseConfig.validate();
+  final valid = DatabaseConfig.validate();
+  if (!valid) {
+    return;
+  }
 
   runApp(const MyApp());
 }

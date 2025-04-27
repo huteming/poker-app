@@ -1,25 +1,36 @@
 import 'package:flutter/material.dart';
 
-class ScoreTypeSelector extends StatelessWidget {
-  final String selectedType;
-  final Function(String) onTypeChanged;
+class Option {
+  final String name;
+  final String value;
 
-  const ScoreTypeSelector({
-    Key? key,
-    required this.selectedType,
-    required this.onTypeChanged,
-  }) : super(key: key);
+  Option({required this.name, required this.value});
+}
+
+class GameResultSelector extends StatelessWidget {
+  final String gameResultType;
+  final Function(String) onGameResultTypeChanged;
+  final List<Option> options = [
+    Option(name: '双扣', value: 'DOUBLE_WIN'),
+    Option(name: '单扣', value: 'SINGLE_WIN'),
+    Option(name: '平扣', value: 'DRAW'),
+  ];
+
+  GameResultSelector({
+    super.key,
+    required this.gameResultType,
+    required this.onGameResultTypeChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final types = ['双扣', '单扣', '平扣'];
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children:
-            types.map((type) {
-              final isSelected = type == selectedType;
+            options.map((option) {
+              final isSelected = option.value == gameResultType;
+
               return Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -34,11 +45,11 @@ class ScoreTypeSelector extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: () => onTypeChanged(type),
+                    onPressed: () => onGameResultTypeChanged(option.value),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Text(
-                        type,
+                        option.name,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight:
