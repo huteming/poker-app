@@ -18,7 +18,7 @@ class DbGameRecord {
 
   // DOUBLE_WIN, SINGLE_WIN, DRAW
   final String gameResultType;
-  // PENDING, COMPLETED
+  // PENDING, SETTLED
   final String settlementStatus;
 
   final DateTime createdAt;
