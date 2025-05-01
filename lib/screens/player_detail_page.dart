@@ -107,11 +107,9 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundColor: _getAvatarColor(player.avatar),
+                backgroundColor: Colors.teal.shade200,
                 child: Text(
-                  player.avatar.length > 2
-                      ? player.avatar.substring(0, 1)
-                      : player.avatar,
+                  player.name,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import '../../models/db_game_record.dart';
 import '../../models/db_player.dart';
 import '../../providers/player_provider.dart';
-import '../../database/game_record_dao.dart';
 import 'widgets/player_detail_row.dart';
+import '../../services/game_record_service.dart';
 
 class GameDetailPage extends StatefulWidget {
   final DbGameRecord record;
@@ -16,7 +16,7 @@ class GameDetailPage extends StatefulWidget {
 }
 
 class _GameDetailPageState extends State<GameDetailPage> {
-  final GameRecordDao _gameRecordDao = GameRecordDao();
+  final GameRecordService _gameRecordService = GameRecordService();
   late PlayerProvider _playerProvider;
   bool _isDeleting = false;
 
@@ -40,7 +40,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
       _isDeleting = true;
     });
 
-    final success = await _gameRecordDao.deleteRecord(widget.record.id);
+    final success = await _gameRecordService.deleteRecord(widget.record.id);
 
     setState(() {
       _isDeleting = false;

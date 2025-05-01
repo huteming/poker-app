@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../models/db_player.dart';
-import '../../../models/player_score.dart';
-import '../../../screens/add_player_page/add_player_page.dart';
+import 'package:poker/models/db_player.dart';
+import 'package:poker/screens/add_player_page/add_player_page.dart';
 
 /// 显示无玩家/记录状态的视图组件
 class ScorePageEmptyView extends StatelessWidget {
-  final Function(List<PlayerScore>) onPlayersAdded;
+  final Function(List<Player>) onPlayersAdded;
 
   const ScorePageEmptyView({super.key, required this.onPlayersAdded});
 
@@ -33,28 +32,15 @@ class ScorePageEmptyView extends StatelessWidget {
               ),
             ),
             onPressed: () async {
-              final List<Player>? result = await Navigator.of(context).push(
+              final List<Player>? newPlayers = await Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const AddPlayerPage()),
               );
-              if (result != null) {
-                final playerScores =
-                    result
-                        .map(
-                          (player) => PlayerScore(
-                            name: player.name,
-                            winRate: 0.0,
-                            scores: [],
-                            bombCounts: [],
-                            avatarText: player.avatar,
-                            recordTimes: [],
-                            gameTypes: [],
-                            recordIds: [],
-                          ),
-                        )
-                        .toList();
 
-                onPlayersAdded(playerScores);
+              if (newPlayers == null) {
+                return;
               }
+
+              onPlayersAdded(newPlayers);
             },
             child: const Text(
               '添加玩家',

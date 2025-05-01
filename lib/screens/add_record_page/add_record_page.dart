@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../utils/score_calculator.dart';
 import '../../models/db_player.dart';
-import '../../database/game_record_dao.dart';
 import 'widgets/game_result_selector.dart';
 import 'widgets/player_selector.dart';
 import 'widgets/bomb_score_selector.dart';
+import '../../services/game_record_service.dart';
 
 class AddRecordPage extends StatefulWidget {
   final List<Player> gamingPlayers;
@@ -16,7 +16,7 @@ class AddRecordPage extends StatefulWidget {
 }
 
 class _AddRecordPageState extends State<AddRecordPage> {
-  final GameRecordDao _gameRecordDao = GameRecordDao();
+  final GameRecordService _gameRecordService = GameRecordService();
 
   List<int> selectedPlayerIds = [];
   Map<int, int> bombScores = {};
@@ -59,11 +59,11 @@ class _AddRecordPageState extends State<AddRecordPage> {
         bombScores,
       );
 
-      await _gameRecordDao.insertRecord(
-        selectedPlayerIds,
-        bombScores,
-        finalScores,
-        gameResultType,
+      await _gameRecordService.insertRecord(
+        playerIds: selectedPlayerIds,
+        bombScores: bombScores,
+        finalScores: finalScores,
+        gameResultType: gameResultType,
       );
 
       // 返回成功结果

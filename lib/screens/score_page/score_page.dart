@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+
+import 'package:poker/services/game_record_service.dart';
 import 'package:poker/models/db_player.dart';
 import 'package:poker/models/db_game_record.dart';
-import 'package:poker/database/game_record_dao.dart';
 import 'package:poker/providers/player_provider.dart';
+
+import 'package:poker/database/game_record_dao.dart';
+import 'package:poker/screens/game_detail_page/game_detail_page.dart';
+import 'package:poker/screens/add_record_page/add_record_page.dart';
+import 'package:poker/screens/add_player_page/add_player_page.dart';
+
 import 'widgets/score_page_loading.dart';
 import 'widgets/score_table_header.dart';
 import 'widgets/score_table_row.dart';
-import '../game_detail_page/game_detail_page.dart';
-import '../add_record_page/add_record_page.dart';
-import '../add_player_page/add_player_page.dart';
+import 'widgets/score_page_empty.dart';
 
 class ScorePage extends StatefulWidget {
   const ScorePage({super.key});
@@ -18,8 +23,8 @@ class ScorePage extends StatefulWidget {
 }
 
 class _ScorePageState extends State<ScorePage> {
-  final GameRecordDao _gameRecordDao = GameRecordDao();
   final PlayerProvider _playerProvider = PlayerProvider();
+  final GameRecordService _gameRecordService = GameRecordService();
   List<Player> gamingPlayers = [];
   List<DbGameRecord> records = [];
   bool _isLoading = true;
@@ -49,7 +54,7 @@ class _ScorePageState extends State<ScorePage> {
       _isRefreshing = true;
     });
 
-    final pendingRecords = await _gameRecordDao.getPendingRecords();
+    final pendingRecords = await _gameRecordService.getPendingRecords();
 
     setState(() {
       _isRefreshing = false;
@@ -101,7 +106,7 @@ class _ScorePageState extends State<ScorePage> {
       _isRefreshing = true;
     });
 
-    await _gameRecordDao.settleAllPendingRecords();
+    await _gameRecordService.settleAllPendingRecords();
 
     await _loadGameRecords();
 
@@ -159,15 +164,15 @@ class _ScorePageState extends State<ScorePage> {
       return const ScorePageLoadingView();
     }
 
-    // if (players.isEmpty) {
-    //   return ScorePageEmptyView(
-    //     onPlayersAdded: (playerScores) {
-    //       setState(() {
-    //         players = playerScores;
-    //       });
-    //     },
-    //   );
-    // }
+    if (gamingPlayers.isEmpty) {
+      return ScorePageEmptyView(
+        onPlayersAdded: (newPlayers) {
+          setState(() {
+            gamingPlayers = newPlayers;
+          });
+        },
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(

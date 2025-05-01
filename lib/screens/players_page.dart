@@ -171,11 +171,9 @@ class _PlayersPageState extends State<PlayersPage> {
               // 头像
               CircleAvatar(
                 radius: 24,
-                backgroundColor: _getAvatarColor(player.avatar),
+                backgroundColor: Colors.teal.shade200,
                 child: Text(
-                  player.avatar.length > 2
-                      ? player.avatar.substring(0, 1)
-                      : player.avatar,
+                  player.name,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -244,18 +242,5 @@ class _PlayersPageState extends State<PlayersPage> {
         ),
       ),
     );
-  }
-
-  Color _getAvatarColor(String avatar) {
-    final colors = [
-      Colors.blue.shade200,
-      Colors.green.shade200,
-      Colors.purple.shade200,
-      Colors.orange.shade200,
-      Colors.pink.shade200,
-      Colors.teal.shade200,
-    ];
-
-    return colors[avatar.hashCode % colors.length];
   }
 }

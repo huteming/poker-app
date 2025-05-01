@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
-import '../models/db_player.dart';
-import '../database/player_dao.dart';
+import 'package:poker/models/db_player.dart';
+import 'package:poker/services/player_service.dart';
 
 /// 玩家状态管理，类似于Vue的Pinia store
 class PlayerProvider with ChangeNotifier {
-  final PlayerDao _playerDao = PlayerDao();
+  final PlayerService _playerService = PlayerService();
   List<Player> _players = [];
   bool _isLoading = false;
   String? _error;
@@ -30,7 +30,7 @@ class PlayerProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    final players = await _playerDao.findAll();
+    final players = await _playerService.getAllPlayers();
 
     _players = players;
     _isLoading = false;

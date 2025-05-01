@@ -98,7 +98,7 @@ class _PlayerSelectionListState extends State<PlayerSelectionList> {
                                         ? Colors.purple
                                         : Colors.grey[300]),
                             child: Text(
-                              player.avatar,
+                              player.name,
                               style: TextStyle(
                                 color:
                                     isDisabled

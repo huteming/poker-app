@@ -1,7 +1,7 @@
 class Player {
   final int id;
   final String name;
-  final String avatar;
+  final String? avatar;
   final DateTime createdAt;
 
   Player({
