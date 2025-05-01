@@ -42,6 +42,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: poker
+          # 在 Cloudflare Pages 中创建的项目名称
+          projectName: poker-app
           directory: build/web
           branch: main
