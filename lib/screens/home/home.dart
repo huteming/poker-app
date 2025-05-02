@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/player_provider.dart';
 import '../score_page/score_page.dart';
-import '../players_page.dart';
+import '../player_list/player_list.dart';
 import 'widgets/home_loading.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,7 +15,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedTabIndex = 0;
 
-  static final List<Widget> _pages = [const ScorePage(), const PlayersPage()];
+  static final List<Widget> _pages = [
+    const ScorePage(),
+    const PlayerListPage(),
+  ];
 
   void _onTabTapped(int index) {
     setState(() {

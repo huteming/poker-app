@@ -32,12 +32,12 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
     try {
       // 获取玩家的所有对局记录
       final records = await _gameRecordDao.getPlayerRecords(
-        widget.playerStats.player.name,
+        widget.playerStats.playerName,
       );
 
       // 获取玩家最新的统计信息
       final Map<String, dynamic> playerStats = await _gameRecordDao
-          .getPlayerStatistics(widget.playerStats.player.name);
+          .getPlayerStatistics(widget.playerStats.playerName);
 
       setState(() {
         _records = records;
@@ -60,11 +60,11 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final player = widget.playerStats.player;
+    final playerName = widget.playerStats.playerName;
     final stats = widget.playerStats;
 
     return Scaffold(
-      appBar: AppBar(title: Text('${player.name}的对局记录')),
+      appBar: AppBar(title: Text('${playerName}的对局记录')),
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -80,7 +80,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
                               itemCount: _records.length,
                               itemBuilder: (context, index) {
                                 final record = _records[index];
-                                return _buildGameRecord(record, player.name);
+                                return _buildGameRecord(record, playerName);
                               },
                             ),
                   ),
@@ -90,7 +90,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
   }
 
   Widget _buildPlayerHeader(PlayerStatistics stats) {
-    final player = stats.player;
+    final playerName = stats.playerName;
     final isPositiveScore = stats.totalScore >= 0;
 
     // 使用最新统计数据（如果有）
@@ -109,7 +109,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
                 radius: 30,
                 backgroundColor: Colors.teal.shade200,
                 child: Text(
-                  player.name,
+                  playerName,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -123,7 +123,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      player.name,
+                      playerName,
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -171,11 +171,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
                 Icons.local_fire_department,
                 valueColor: Colors.orange,
               ),
-              _buildDetailStatItem(
-                '加入时间',
-                _formatDate(player.createdAt),
-                Icons.date_range,
-              ),
+              _buildDetailStatItem('加入时间', '0000-00-00', Icons.date_range),
             ],
           ),
         ],
@@ -287,7 +283,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
                   ),
                 ),
                 Text(
-                  _formatDate(record.createdAt),
+                  '0000-00-00',
                   style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 ),
               ],
@@ -345,10 +341,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   Color _getAvatarColor(String avatar) {

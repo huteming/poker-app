@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:logging/logging.dart';
 import 'package:poker/models/db_game_record.dart';
+import 'package:poker/models/player_statistics.dart';
 import 'base_service.dart';
 
 class GameRecordService extends BaseService {
@@ -101,6 +102,39 @@ class GameRecordService extends BaseService {
     } catch (e) {
       log.warning('结算所有待结算游戏记录时发生错误: $e');
       return false;
+    }
+  }
+
+  Future<List<PlayerStatistics>> getAllPlayerStatistics() async {
+    try {
+      final response = await get('/game-records/player-stats');
+      if (response.statusCode == 200) {
+        final String responseBody = utf8.decode(response.bodyBytes);
+        final List<dynamic> data = json.decode(responseBody);
+        final stats =
+            data
+                .map(
+                  (map) => PlayerStatistics(
+                    playerId: map['player_id'],
+                    playerName: map['player_name'],
+                    totalGames: map['total_games'],
+                    wins: map['wins'],
+                    totalScore: map['total_score'],
+                    winRate: (map['win_rate'] as num).toDouble(),
+                    rank: map['rank'],
+                  ),
+                )
+                .toList();
+
+        log.info('获取所有玩家统计信息: ${stats.length}条');
+        return stats;
+      } else {
+        log.warning('获取玩家统计信息失败，状态码: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      log.warning('获取玩家统计信息时发生错误: $e');
+      return [];
     }
   }
 }

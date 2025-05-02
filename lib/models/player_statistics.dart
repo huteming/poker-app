@@ -1,28 +1,38 @@
-import 'db_player.dart';
-
 class PlayerStatistics {
-  final Player player;
-  final double winRate;
+  final int playerId;
+  final String playerName;
+  final int totalGames;
+  final int wins;
   final int totalScore;
+  final double winRate;
   final int rank;
 
   PlayerStatistics({
-    required this.player,
-    required this.winRate,
+    required this.playerId,
+    required this.playerName,
+    required this.totalGames,
+    required this.wins,
     required this.totalScore,
+    required this.winRate,
     required this.rank,
   });
 
   PlayerStatistics copyWith({
-    Player? player,
-    double? winRate,
+    int? playerId,
+    String? playerName,
+    int? totalGames,
+    int? wins,
     int? totalScore,
+    double? winRate,
     int? rank,
   }) {
     return PlayerStatistics(
-      player: player ?? this.player,
-      winRate: winRate ?? this.winRate,
+      playerId: playerId ?? this.playerId,
+      playerName: playerName ?? this.playerName,
+      totalGames: totalGames ?? this.totalGames,
+      wins: wins ?? this.wins,
       totalScore: totalScore ?? this.totalScore,
+      winRate: winRate ?? this.winRate,
       rank: rank ?? this.rank,
     );
   }

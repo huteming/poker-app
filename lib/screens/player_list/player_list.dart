@@ -1,87 +1,38 @@
 import 'package:flutter/material.dart';
-import '../database/player_dao.dart';
-import '../database/game_record_dao.dart';
-import '../models/player_statistics.dart';
-import 'history_page.dart';
-import 'player_detail_page.dart';
+import '../../models/player_statistics.dart';
+import '../history_page.dart';
+import '../player_detail_page.dart';
+import '../../services/game_record_service.dart';
 
-class PlayersPage extends StatefulWidget {
-  const PlayersPage({super.key});
+class PlayerListPage extends StatefulWidget {
+  const PlayerListPage({super.key});
 
   @override
-  State<PlayersPage> createState() => _PlayersPageState();
+  State<PlayerListPage> createState() => _PlayersPageState();
 }
 
-class _PlayersPageState extends State<PlayersPage> {
-  final PlayerDao _playerDao = PlayerDao();
+class _PlayersPageState extends State<PlayerListPage> {
+  final GameRecordService _gameRecordService = GameRecordService();
   bool _isLoading = true;
   List<PlayerStatistics> _playerStats = [];
 
   @override
   void initState() {
     super.initState();
-    _loadPlayers();
+    _loadPlayerStatistics();
   }
 
-  Future<void> _loadPlayers() async {
+  Future<void> _loadPlayerStatistics() async {
     setState(() {
       _isLoading = true;
     });
 
-    try {
-      // 获取所有玩家
-      final players = await _playerDao.findAll();
+    final allStats = await _gameRecordService.getAllPlayerStatistics();
 
-      // 获取所有玩家的统计信息
-      final GameRecordDao gameRecordDao = GameRecordDao();
-      final allStats = await gameRecordDao.getAllPlayersStatistics();
-
-      // 将玩家信息和统计信息结合
-      final playerStats = <PlayerStatistics>[];
-
-      for (final player in players) {
-        // 查找该玩家的统计信息
-        final statItem = allStats.firstWhere(
-          (stat) => stat['playerName'] == player.name,
-          orElse:
-              () => {
-                'playerName': player.name,
-                'totalGames': 0,
-                'wins': 0,
-                'winRate': 0.0,
-                'totalScore': 0,
-                'totalBombScore': 0,
-                'rank': allStats.length + 1,
-              },
-        );
-
-        playerStats.add(
-          PlayerStatistics(
-            player: player,
-            winRate: statItem['winRate'] as double,
-            totalScore: statItem['totalScore'] as int,
-            rank: statItem['rank'] as int,
-          ),
-        );
-      }
-
-      // 按排名排序
-      playerStats.sort((a, b) => a.rank.compareTo(b.rank));
-
-      setState(() {
-        _playerStats = playerStats;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
-        context,
-      ).showSnackBar(SnackBar(content: Text('加载玩家失败: $e')));
-    }
+    setState(() {
+      _playerStats = allStats;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -148,7 +99,7 @@ class _PlayersPageState extends State<PlayersPage> {
   }
 
   Widget _buildPlayerCard(PlayerStatistics stat) {
-    final player = stat.player;
+    final playerName = stat.playerName;
     final isPositiveScore = stat.totalScore >= 0;
 
     return Card(
@@ -173,7 +124,7 @@ class _PlayersPageState extends State<PlayersPage> {
                 radius: 24,
                 backgroundColor: Colors.teal.shade200,
                 child: Text(
-                  player.name,
+                  playerName,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -188,7 +139,7 @@ class _PlayersPageState extends State<PlayersPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      player.name,
+                      playerName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -203,14 +154,16 @@ class _PlayersPageState extends State<PlayersPage> {
                           color: Colors.grey[600],
                         ),
                         const SizedBox(width: 4),
+                        // 胜率
                         Text(
-                          '${(stat.winRate * 100).toInt()}%',
+                          '${stat.winRate}%',
                           style: TextStyle(
                             color: Colors.grey[700],
                             fontSize: 14,
                           ),
                         ),
                         const SizedBox(width: 8),
+                        // 排名
                         Text(
                           '排名 ${stat.rank}',
                           style: TextStyle(
