@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/db_game_record.dart';
 import '../models/player_statistics.dart';
-import '../database/game_record_dao.dart';
 
 class PlayerDetailPage extends StatefulWidget {
   final PlayerStatistics playerStats;
@@ -13,7 +12,6 @@ class PlayerDetailPage extends StatefulWidget {
 }
 
 class _PlayerDetailPageState extends State<PlayerDetailPage> {
-  final GameRecordDao _gameRecordDao = GameRecordDao();
   List<DbGameRecord> _records = [];
   bool _isLoading = true;
   Map<String, dynamic>? _playerStats;
@@ -21,42 +19,42 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
   @override
   void initState() {
     super.initState();
-    _loadPlayerGames();
+    // _loadPlayerGames();
   }
 
-  Future<void> _loadPlayerGames() async {
-    setState(() {
-      _isLoading = true;
-    });
+  // Future<void> _loadPlayerGames() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
 
-    try {
-      // 获取玩家的所有对局记录
-      final records = await _gameRecordDao.getPlayerRecords(
-        widget.playerStats.playerName,
-      );
+  //   try {
+  //     // 获取玩家的所有对局记录
+  //     final records = await _gameRecordDao.getPlayerRecords(
+  //       widget.playerStats.playerName,
+  //     );
 
-      // 获取玩家最新的统计信息
-      final Map<String, dynamic> playerStats = await _gameRecordDao
-          .getPlayerStatistics(widget.playerStats.playerName);
+  //     // 获取玩家最新的统计信息
+  //     final Map<String, dynamic> playerStats = await _gameRecordDao
+  //         .getPlayerStatistics(widget.playerStats.playerName);
 
-      setState(() {
-        _records = records;
-        _isLoading = false;
+  //     setState(() {
+  //       _records = records;
+  //       _isLoading = false;
 
-        // 更新统计信息
-        _playerStats ??= playerStats;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+  //       // 更新统计信息
+  //       _playerStats ??= playerStats;
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
 
-      ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
-        context,
-      ).showSnackBar(SnackBar(content: Text('加载对局记录失败: $e')));
-    }
-  }
+  //     ScaffoldMessenger.of(
+  //       // ignore: use_build_context_synchronously
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text('加载对局记录失败: $e')));
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

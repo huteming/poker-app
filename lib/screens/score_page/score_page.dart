@@ -5,7 +5,6 @@ import 'package:poker/models/db_player.dart';
 import 'package:poker/models/db_game_record.dart';
 import 'package:poker/providers/player_provider.dart';
 
-import 'package:poker/database/game_record_dao.dart';
 import 'package:poker/screens/game_detail_page/game_detail_page.dart';
 import 'package:poker/screens/add_record_page/add_record_page.dart';
 import 'package:poker/screens/add_player_page/add_player_page.dart';
