@@ -40,7 +40,8 @@ class _GameDetailPageState extends State<GameDetailPage> {
       _isDeleting = true;
     });
 
-    final success = await _gameRecordService.deleteRecord(widget.record.id);
+    final int id = widget.record.id;
+    final success = await _gameRecordService.deleteRecord(id);
 
     setState(() {
       _isDeleting = false;
@@ -61,7 +62,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
       context,
     ).showSnackBar(const SnackBar(content: Text('删除记录成功')));
 
-    Navigator.of(context).pop('deleted');
+    Navigator.of(context).pop({'success': true, 'id': id});
   }
 
   @override

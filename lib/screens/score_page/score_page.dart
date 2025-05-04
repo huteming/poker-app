@@ -159,9 +159,16 @@ class _ScorePageState extends State<ScorePage> {
       MaterialPageRoute(builder: (context) => GameDetailPage(record: record)),
     );
 
-    // 检查返回结果，如果是删除操作，刷新列表
-    if (result == 'deleted') {
-      await _loadGameRecords();
+    if (result == null) {
+      return;
+    }
+
+    if (result['success']) {
+      setState(() {
+        records.removeAt(
+          records.indexWhere((record) => record.id == result['id']),
+        );
+      });
     }
   }
 
