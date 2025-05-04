@@ -57,16 +57,11 @@ class GameRecordService extends BaseService {
         },
       );
 
-      if (response.statusCode == 201) {
-        final String responseBody = utf8.decode(response.bodyBytes);
-        final Map<String, dynamic> data = json.decode(responseBody);
-        return DbGameRecord.fromMap(data);
-      } else {
-        log.warning('插入游戏记录失败，状态码: ${response.statusCode}');
-        throw Exception('插入游戏记录失败');
-      }
+      final String responseBody = utf8.decode(response.bodyBytes);
+      final Map<String, dynamic> data = json.decode(responseBody);
+      return DbGameRecord.fromMap(data);
     } catch (e) {
-      log.warning('插入游戏记录时发生错误: $e');
+      log.warning('保存记录失败: $e');
       rethrow;
     }
   }
