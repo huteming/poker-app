@@ -5,8 +5,8 @@ import 'package:poker/models/db_error.dart';
 
 abstract class BaseService {
   final log = Logger('BaseService');
-  // final String _baseUrl = 'https://api.huteming.fun/poker/v1';
-  final String _baseUrl = 'http://127.0.0.1:8787/poker/v1';
+  final String _baseUrl = 'https://api.huteming.fun/poker/v1';
+  // final String _baseUrl = 'http://127.0.0.1:8787/poker/v1';
   final String _token = '1234567890';
 
   String get baseUrl => _baseUrl;
