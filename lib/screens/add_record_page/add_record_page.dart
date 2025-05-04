@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import '../../utils/score_calculator.dart';
 import '../../models/db_player.dart';
 import 'widgets/game_result_selector.dart';
@@ -17,6 +18,7 @@ class AddRecordPage extends StatefulWidget {
 
 class _AddRecordPageState extends State<AddRecordPage> {
   final GameRecordService _gameRecordService = GameRecordService();
+  final Logger log = Logger('AddRecordPage');
 
   List<int> selectedPlayerIds = [];
   Map<int, int> bombScores = {};
@@ -59,7 +61,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
         bombScores,
       );
 
-      await _gameRecordService.insertRecord(
+      final newRecord = await _gameRecordService.insertRecord(
         playerIds: selectedPlayerIds,
         bombScores: bombScores,
         finalScores: finalScores,
@@ -72,7 +74,7 @@ class _AddRecordPageState extends State<AddRecordPage> {
           context,
         ).showSnackBar(SnackBar(content: Text('记录已成功保存')));
 
-        Navigator.of(context).pop({'success': true});
+        Navigator.of(context).pop({'success': true, 'newRecord': newRecord});
       }
     } catch (e) {
       if (mounted) {

@@ -121,13 +121,21 @@ class _ScorePageState extends State<ScorePage> {
   }
 
   void _navigateToAddRecord() async {
-    await Navigator.of(context).push(
+    final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => AddRecordPage(gamingPlayers: gamingPlayers),
       ),
     );
 
-    await _loadGameRecords();
+    if (result == null) {
+      return;
+    }
+
+    if (result['success']) {
+      setState(() {
+        records.insert(0, result['newRecord']);
+      });
+    }
   }
 
   void _navigateToAddPlayer() async {
