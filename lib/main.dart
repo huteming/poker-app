@@ -9,7 +9,6 @@ import 'utils/setup_log.dart';
 import 'utils/message.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   setupLog();
   final log = Logger('FlutterError');
 
@@ -20,6 +19,7 @@ void main() async {
 
   runZonedGuarded(
     () {
+      WidgetsFlutterBinding.ensureInitialized();
       runApp(const MyApp());
     },
     (error, stackTrace) {
