@@ -1,15 +1,31 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 import 'providers/player_provider.dart';
 import 'screens/home/home.dart';
 import 'utils/setup_log.dart';
+import 'utils/message.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   setupLog();
+  final log = Logger('FlutterError');
 
-  runApp(const MyApp());
+  FlutterError.onError = (FlutterErrorDetails details) {
+    log.severe('Flutter 框架异常: ${details.exception}');
+    FlutterError.presentError(details);
+  };
+
+  runZonedGuarded(
+    () {
+      runApp(const MyApp());
+    },
+    (error, stackTrace) {
+      log.severe('全局捕获到异常: $error');
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,6 +36,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => PlayerProvider())],
       child: MaterialApp(
+        scaffoldMessengerKey: Message().scaffoldMessengerKey,
         title: '双扣积分榜',
         theme: ThemeData(
           primarySwatch: Colors.purple,
