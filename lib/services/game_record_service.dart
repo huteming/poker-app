@@ -1,32 +1,28 @@
-import 'dart:convert';
 import 'package:logging/logging.dart';
 import 'package:poker/models/db_game_record.dart';
 import 'package:poker/models/player_statistics.dart';
-import 'base_service.dart';
+import 'package:poker/utils/message.dart';
+import 'package:poker/utils/api_client.dart';
+import 'package:poker/models/api_error_response.dart';
 
-class GameRecordService extends BaseService {
+class GameRecordService extends ApiClient {
   static final GameRecordService _instance = GameRecordService._internal();
   factory GameRecordService() => _instance;
   GameRecordService._internal();
 
-  final log = Logger('GameRecordService');
+  final _log = Logger('GameRecordService');
+  final _message = Message();
 
   Future<List<DbGameRecord>> getPendingRecords() async {
     try {
-      final response = await get('/game-records/pending');
+      final response = await get<List<dynamic>>('/game-records/pending');
+      final records =
+          response.data.map((map) => DbGameRecord.fromMap(map)).toList();
+      _log.info('获取待结算游戏记录: ${records.length}条');
 
-      if (response.statusCode == 200) {
-        final String responseBody = utf8.decode(response.bodyBytes);
-        final List<dynamic> data = json.decode(responseBody);
-        final records = data.map((map) => DbGameRecord.fromMap(map)).toList();
-        log.info('获取待结算游戏记录: ${records.length}条');
-        return records;
-      } else {
-        log.warning('获取待结算游戏记录失败，状态码: ${response.statusCode}');
-        return [];
-      }
-    } catch (e) {
-      log.warning('获取待结算游戏记录时发生错误: $e');
+      return records;
+    } on ApiErrorResponse catch (e) {
+      _message.showError('获取待结算记录失败: ${e.message}');
       return [];
     }
   }
@@ -38,7 +34,7 @@ class GameRecordService extends BaseService {
     required String gameResultType,
   }) async {
     try {
-      final response = await post(
+      final response = await post<Map<String, dynamic>>(
         '/game-records',
         body: {
           'player1_id': playerIds[0],
@@ -57,11 +53,12 @@ class GameRecordService extends BaseService {
         },
       );
 
-      final String responseBody = utf8.decode(response.bodyBytes);
-      final Map<String, dynamic> data = json.decode(responseBody);
-      return DbGameRecord.fromMap(data);
-    } catch (e) {
-      log.warning('保存记录失败: $e');
+      _message.showSuccess('记录已成功保存');
+
+      final record = DbGameRecord.fromMap(response.data);
+      return record;
+    } on ApiErrorResponse catch (e) {
+      _message.showError('保存记录失败: ${e.message}');
       rethrow;
     }
   }
@@ -69,66 +66,45 @@ class GameRecordService extends BaseService {
   Future<bool> deleteRecord(int recordId) async {
     try {
       final response = await delete('/game-records/$recordId');
-
-      if (response.statusCode == 200) {
-        log.info('成功删除游戏记录: $recordId');
-        return true;
-      } else {
-        log.warning('删除游戏记录失败，状态码: ${response.statusCode}');
-        return false;
-      }
-    } catch (e) {
-      log.warning('删除游戏记录时发生错误: $e');
-      return false;
+      return response.data;
+    } on ApiErrorResponse catch (e) {
+      _message.showError('删除记录失败: ${e.message}');
+      rethrow;
     }
   }
 
   Future<bool> settleAllPendingRecords() async {
     try {
       final response = await patch('/game-records/settle-all');
-
-      if (response.statusCode == 200) {
-        log.info('成功结算所有待结算游戏记录');
-        return true;
-      } else {
-        log.warning('结算所有待结算游戏记录失败，状态码: ${response.statusCode}');
-        return false;
-      }
-    } catch (e) {
-      log.warning('结算所有待结算游戏记录时发生错误: $e');
-      return false;
+      return response.data;
+    } on ApiErrorResponse catch (e) {
+      _message.showError('结算所有记录失败: ${e.message}');
+      rethrow;
     }
   }
 
   Future<List<PlayerStatistics>> getAllPlayerStatistics() async {
     try {
-      final response = await get('/game-records/player-stats');
-      if (response.statusCode == 200) {
-        final String responseBody = utf8.decode(response.bodyBytes);
-        final List<dynamic> data = json.decode(responseBody);
-        final stats =
-            data
-                .map(
-                  (map) => PlayerStatistics(
-                    playerId: map['player_id'],
-                    playerName: map['player_name'],
-                    totalGames: map['total_games'],
-                    wins: map['wins'],
-                    totalScore: map['total_score'],
-                    winRate: (map['win_rate'] as num).toDouble(),
-                    rank: map['rank'],
-                  ),
-                )
-                .toList();
+      final response = await get<List<dynamic>>('/game-records/player-stats');
+      final stats =
+          response.data
+              .map(
+                (map) => PlayerStatistics(
+                  playerId: map['player_id'],
+                  playerName: map['player_name'],
+                  totalGames: map['total_games'],
+                  wins: map['wins'],
+                  totalScore: map['total_score'],
+                  winRate: (map['win_rate'] as num).toDouble(),
+                  rank: map['rank'],
+                ),
+              )
+              .toList();
 
-        log.info('获取所有玩家统计信息: ${stats.length}条');
-        return stats;
-      } else {
-        log.warning('获取玩家统计信息失败，状态码: ${response.statusCode}');
-        return [];
-      }
-    } catch (e) {
-      log.warning('获取玩家统计信息时发生错误: $e');
+      _log.info('获取所有玩家统计信息: ${stats.length}条');
+      return stats;
+    } on ApiErrorResponse catch (e) {
+      _message.showError('获取所有玩家统计信息失败: ${e.message}');
       return [];
     }
   }

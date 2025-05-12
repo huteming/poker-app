@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:logging/logging.dart';
 import 'package:poker/models/db_player.dart';
-import 'base_service.dart';
+import 'package:poker/utils/api_client.dart';
 
-class PlayerService extends BaseService {
+class PlayerService extends ApiClient {
   static final PlayerService _instance = PlayerService._internal();
   factory PlayerService() => _instance;
   PlayerService._internal();
@@ -23,24 +22,13 @@ class PlayerService extends BaseService {
   }
 
   Future<List<Player>> _getAllPlayersFromServer() async {
-    try {
-      final response = await get('/players');
+    final response = await get<List<dynamic>>('/players');
 
-      if (response.statusCode == 200) {
-        final String responseBody = utf8.decode(response.bodyBytes);
-        final List<dynamic> data = json.decode(responseBody);
-        _cachedPlayers = data.map((map) => Player.fromMap(map)).toList();
-        _lastCacheTime = DateTime.now();
-        log.info('已从服务器加载玩家列表: ${_cachedPlayers!.length}个玩家');
-        return _cachedPlayers!;
-      } else {
-        log.warning('获取玩家列表失败，状态码: ${response.statusCode}');
-        return [];
-      }
-    } catch (e) {
-      log.warning('获取玩家列表时发生错误: $e');
-      return [];
-    }
+    _cachedPlayers = response.data.map((map) => Player.fromMap(map)).toList();
+    _lastCacheTime = DateTime.now();
+    log.info('已从服务器加载玩家列表: ${_cachedPlayers!.length}个玩家');
+
+    return _cachedPlayers!;
   }
 
   // 检查缓存是否有效

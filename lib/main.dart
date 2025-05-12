@@ -23,7 +23,7 @@ void main() async {
       runApp(const MyApp());
     },
     (error, stackTrace) {
-      log.severe('全局捕获到异常: $error');
+      log.severe(error.toString());
     },
   );
 }

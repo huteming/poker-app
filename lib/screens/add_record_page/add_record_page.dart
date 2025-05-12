@@ -50,11 +50,11 @@ class _AddRecordPageState extends State<AddRecordPage> {
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
-
     try {
+      setState(() {
+        _isSubmitting = true;
+      });
+
       final finalScores = createGameScores(
         gameResultType,
         selectedPlayerIds,
@@ -68,19 +68,8 @@ class _AddRecordPageState extends State<AddRecordPage> {
         gameResultType: gameResultType,
       );
 
-      // 返回成功结果
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('记录已成功保存')));
-
         Navigator.of(context).pop({'success': true, 'newRecord': newRecord});
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('保存记录失败：$e')));
       }
     } finally {
       setState(() {
