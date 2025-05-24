@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:poker/models/db_player.dart';
-import '../../../models/db_game_record.dart';
+import 'package:poker/domains/game_record_entity.dart';
+import 'package:poker/domains/player_entity.dart';
 
 class Score {
   final String score;
@@ -10,8 +10,8 @@ class Score {
 }
 
 class ScoreTableRow extends StatelessWidget {
-  final List<Player> players;
-  final DbGameRecord record;
+  final List<PlayerEntity> players;
+  final GameRecordEntity record;
   final int rowIndex;
   final VoidCallback onTap;
 
@@ -33,7 +33,7 @@ class ScoreTableRow extends StatelessWidget {
     return Score(score: '$score', color: Colors.red);
   }
 
-  Score _getScore(Player player) {
+  Score _getScore(PlayerEntity player) {
     if (record.player1Id == player.id) {
       return _formatScore(record.player1FinalScore);
     }

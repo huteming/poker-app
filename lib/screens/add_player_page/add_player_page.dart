@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../models/db_player.dart';
+import 'package:poker/domains/player_entity.dart';
 import 'widgets/player_selection_list.dart';
 
 class AddPlayerPage extends StatefulWidget {
-  final List<Player> gamingPlayers;
+  final List<PlayerEntity> gamingPlayers;
 
   const AddPlayerPage({super.key, this.gamingPlayers = const []});
 
@@ -12,7 +12,7 @@ class AddPlayerPage extends StatefulWidget {
 }
 
 class _AddPlayerPageState extends State<AddPlayerPage> {
-  List<Player> newPlayers = [];
+  List<PlayerEntity> newPlayers = [];
 
   @override
   Widget build(BuildContext context) {

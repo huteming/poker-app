@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:poker/data/local/app_database.dart';
+import 'package:poker/data/repositories/game_record_repository.dart';
+import 'package:poker/domains/game_record_entity.dart';
+import 'package:poker/domains/player_entity.dart';
 
 import 'package:poker/services/game_record_service.dart';
-import 'package:poker/models/db_player.dart';
-import 'package:poker/models/db_game_record.dart';
 import 'package:poker/providers/player_provider.dart';
 
 import 'package:poker/screens/game_detail_page/game_detail_page.dart';
@@ -24,8 +26,10 @@ class ScorePage extends StatefulWidget {
 class _ScorePageState extends State<ScorePage> {
   final PlayerProvider _playerProvider = PlayerProvider();
   final GameRecordService _gameRecordService = GameRecordService();
-  List<Player> gamingPlayers = [];
-  List<DbGameRecord> records = [];
+  final GameRecordRepository _gameRecordRepository = GameRecordRepository();
+
+  List<PlayerEntity> gamingPlayers = [];
+  List<GameRecordEntity> records = [];
   bool _isLoading = true;
   bool _isRefreshing = false;
 
@@ -53,7 +57,7 @@ class _ScorePageState extends State<ScorePage> {
       _isRefreshing = true;
     });
 
-    final pendingRecords = await _gameRecordService.getPendingRecords();
+    final pendingRecords = await _gameRecordRepository.getPendingRecords();
 
     setState(() {
       _isRefreshing = false;
@@ -139,7 +143,7 @@ class _ScorePageState extends State<ScorePage> {
   }
 
   void _navigateToAddPlayer() async {
-    final List<Player>? result = await Navigator.of(context).push(
+    final List<PlayerEntity>? result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => AddPlayerPage(gamingPlayers: gamingPlayers),
       ),
@@ -154,7 +158,10 @@ class _ScorePageState extends State<ScorePage> {
     });
   }
 
-  void _navigateToGameDetail(BuildContext context, DbGameRecord record) async {
+  void _navigateToGameDetail(
+    BuildContext context,
+    GameRecordEntity record,
+  ) async {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => GameDetailPage(record: record)),
     );

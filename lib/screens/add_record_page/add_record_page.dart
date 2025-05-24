@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
-import '../../utils/score_calculator.dart';
-import '../../models/db_player.dart';
+import 'package:poker/domains/player_entity.dart';
+
 import 'widgets/game_result_selector.dart';
 import 'widgets/player_selector.dart';
 import 'widgets/bomb_score_selector.dart';
+
+import '../../utils/score_calculator.dart';
 import '../../services/game_record_service.dart';
 
 class AddRecordPage extends StatefulWidget {
-  final List<Player> gamingPlayers;
+  final List<PlayerEntity> gamingPlayers;
 
   const AddRecordPage({super.key, required this.gamingPlayers});
 

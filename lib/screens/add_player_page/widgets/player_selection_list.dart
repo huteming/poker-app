@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:poker/data/local/app_database.dart';
+import 'package:poker/domains/player_entity.dart';
 import 'package:provider/provider.dart';
-import '../../../models/db_player.dart';
 import '../../../providers/player_provider.dart';
 
 class PlayerSelectionList extends StatefulWidget {
-  final List<Player> newPlayers;
-  final List<Player> gamingPlayers;
-  final Function(List<Player>) onPlayersSelected;
+  final List<PlayerEntity> newPlayers;
+  final List<PlayerEntity> gamingPlayers;
+  final Function(List<PlayerEntity>) onPlayersSelected;
 
   const PlayerSelectionList({
     super.key,
@@ -20,8 +21,8 @@ class PlayerSelectionList extends StatefulWidget {
 }
 
 class _PlayerSelectionListState extends State<PlayerSelectionList> {
-  void _togglePlayer(Player player) {
-    final newSelectedPlayers = List<Player>.from(widget.newPlayers);
+  void _togglePlayer(PlayerEntity player) {
+    final newSelectedPlayers = List<PlayerEntity>.from(widget.newPlayers);
     if (newSelectedPlayers.contains(player)) {
       newSelectedPlayers.remove(player);
     } else {
@@ -30,11 +31,11 @@ class _PlayerSelectionListState extends State<PlayerSelectionList> {
     widget.onPlayersSelected(newSelectedPlayers);
   }
 
-  bool _isSelected(Player player) {
+  bool _isSelected(PlayerEntity player) {
     return widget.newPlayers.any((element) => element.id == player.id);
   }
 
-  bool _isDisabled(Player player) {
+  bool _isDisabled(PlayerEntity player) {
     return widget.gamingPlayers.any((element) => element.id == player.id);
   }
 

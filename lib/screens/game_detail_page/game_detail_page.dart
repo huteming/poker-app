@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:poker/domains/game_record_entity.dart';
+import 'package:poker/domains/player_entity.dart';
 import 'package:provider/provider.dart';
-import '../../models/db_game_record.dart';
-import '../../models/db_player.dart';
-import '../../providers/player_provider.dart';
+
 import 'widgets/player_detail_row.dart';
+
+import '../../providers/player_provider.dart';
 import '../../services/game_record_service.dart';
 
 class GameDetailPage extends StatefulWidget {
-  final DbGameRecord record;
+  final GameRecordEntity record;
 
   const GameDetailPage({super.key, required this.record});
 
@@ -26,13 +28,13 @@ class _GameDetailPageState extends State<GameDetailPage> {
     _playerProvider = Provider.of<PlayerProvider>(context, listen: false);
   }
 
-  Player get _player1 =>
+  PlayerEntity get _player1 =>
       _playerProvider.findPlayerById(widget.record.player1Id);
-  Player get _player2 =>
+  PlayerEntity get _player2 =>
       _playerProvider.findPlayerById(widget.record.player2Id);
-  Player get _player3 =>
+  PlayerEntity get _player3 =>
       _playerProvider.findPlayerById(widget.record.player3Id);
-  Player get _player4 =>
+  PlayerEntity get _player4 =>
       _playerProvider.findPlayerById(widget.record.player4Id);
 
   Future<void> _deleteRecord() async {

@@ -1,16 +1,18 @@
 import 'package:flutter/foundation.dart';
-import 'package:poker/models/db_player.dart';
-import 'package:poker/services/player_service.dart';
+import 'package:poker/data/local/app_database.dart';
+import 'package:poker/data/repositories/player_repository.dart';
+import 'package:poker/domains/player_entity.dart';
 
 /// 玩家状态管理，类似于Vue的Pinia store
 class PlayerProvider with ChangeNotifier {
-  final PlayerService _playerService = PlayerService();
-  List<Player> _players = [];
+  final PlayerRepository _playerRepository = PlayerRepository();
+
+  List<PlayerEntity> _players = [];
   bool _isLoading = false;
   String? _error;
 
   // 获取器
-  List<Player> get players => _players;
+  List<PlayerEntity> get players => _players;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasPlayers => _players.isNotEmpty;
@@ -30,7 +32,7 @@ class PlayerProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    final players = await _playerService.getAllPlayers();
+    final players = await _playerRepository.getAllPlayers();
 
     _players = players;
     _isLoading = false;
@@ -39,12 +41,12 @@ class PlayerProvider with ChangeNotifier {
   }
 
   // 根据ID查找玩家
-  Player findPlayerById(int id) {
+  PlayerEntity findPlayerById(int id) {
     return _players.firstWhere((player) => player.id == id);
   }
 
   // 根据名称查找玩家
-  Player findPlayerByName(String name) {
+  PlayerEntity findPlayerByName(String name) {
     return _players.firstWhere((player) => player.name == name);
   }
 }

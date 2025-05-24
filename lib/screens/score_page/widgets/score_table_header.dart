@@ -1,12 +1,10 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
-
-import '../../../models/db_player.dart';
-import '../../../models/db_game_record.dart';
+import 'package:poker/domains/game_record_entity.dart';
+import 'package:poker/domains/player_entity.dart';
 
 class ScoreTableHeader extends StatelessWidget {
-  final List<Player> players;
-  final List<DbGameRecord> records;
+  final List<PlayerEntity> players;
+  final List<GameRecordEntity> records;
 
   const ScoreTableHeader({
     super.key,
@@ -14,7 +12,7 @@ class ScoreTableHeader extends StatelessWidget {
     required this.records,
   });
 
-  calcPlayerStat(Player player) {
+  calcPlayerStat(PlayerEntity player) {
     var totalScore = 0;
     var winCount = 0;
     var loseCount = 0;
@@ -40,8 +38,6 @@ class ScoreTableHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log(players.toString());
-
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(

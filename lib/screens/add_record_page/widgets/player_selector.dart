@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../models/db_player.dart';
+import 'package:poker/domains/player_entity.dart';
 import '../../../../widgets/player_avatar.dart';
 
 class PlayerSelector extends StatelessWidget {
-  final List<Player> players;
+  final List<PlayerEntity> players;
   final List<int> selectedPlayerIds;
   final Function(List<int>) onChanged;
 
