@@ -202,6 +202,7 @@ class GameRecordEntity {
     if (gameResultType == 'DOUBLE_WIN') return '双扣';
     if (gameResultType == 'SINGLE_WIN') return '单扣';
     if (gameResultType == 'DRAW') return '平扣';
+    if (gameResultType == 'STALEMATE') return '流局';
     return '';
   }
 

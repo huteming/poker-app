@@ -9,3 +9,9 @@
 ```bash
 dart run build_runner watch
 ```
+
+## 运行单测
+
+```bash
+flutter test test/utils/score_calculator_test.dart
+```

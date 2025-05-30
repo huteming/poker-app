@@ -14,6 +14,7 @@ class GameResultSelector extends StatelessWidget {
     Option(name: '双扣', value: 'DOUBLE_WIN'),
     Option(name: '单扣', value: 'SINGLE_WIN'),
     Option(name: '平扣', value: 'DRAW'),
+    Option(name: '流局', value: 'STALEMATE'),
   ];
 
   GameResultSelector({

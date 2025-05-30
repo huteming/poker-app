@@ -5,6 +5,7 @@ const Map<String, int> gameResultScore = {
   'DOUBLE_WIN': 20,
   'SINGLE_WIN': 10,
   'DRAW': 5,
+  'STALEMATE': 0,
 };
 
 // 炸弹系数
