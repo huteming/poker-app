@@ -20,6 +20,11 @@ class PlayerProvider with ChangeNotifier {
   // 构造函数，初始化时自动加载玩家列表
   PlayerProvider() {
     loadPlayers();
+
+    _playerRepository.playersStream.listen((players) {
+      _players = players;
+      notifyListeners();
+    });
   }
 
   // 加载玩家列表
