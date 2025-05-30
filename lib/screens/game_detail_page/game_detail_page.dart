@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:poker/data/repositories/game_record_repository.dart';
 import 'package:poker/domains/game_record_entity.dart';
 import 'package:poker/domains/player_entity.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'widgets/player_detail_row.dart';
 
 import '../../providers/player_provider.dart';
-import '../../services/game_record_service.dart';
 
 class GameDetailPage extends StatefulWidget {
   final GameRecordEntity record;
@@ -18,7 +18,8 @@ class GameDetailPage extends StatefulWidget {
 }
 
 class _GameDetailPageState extends State<GameDetailPage> {
-  final GameRecordService _gameRecordService = GameRecordService();
+  final GameRecordRepository _gameRecordRepository = GameRecordRepository();
+
   late PlayerProvider _playerProvider;
   bool _isDeleting = false;
 
@@ -43,7 +44,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
     });
 
     final int id = widget.record.id;
-    final success = await _gameRecordService.deleteRecord(id);
+    final success = await _gameRecordRepository.deleteRecord(id);
 
     setState(() {
       _isDeleting = false;

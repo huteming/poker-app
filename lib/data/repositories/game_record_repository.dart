@@ -1,3 +1,4 @@
+import 'package:logging/logging.dart';
 import 'package:poker/data/local/app_database.dart';
 import 'package:poker/data/remote/services/game_record_service.dart';
 import 'package:poker/domains/game_record_entity.dart';
@@ -5,6 +6,7 @@ import 'package:poker/domains/game_record_entity.dart';
 class GameRecordRepository {
   final AppDatabase _db = AppDatabase();
   final GameRecordService _gameRecordService = GameRecordService();
+  final _logger = Logger('GameRecordRepository');
 
   Future<List<GameRecordEntity>> getPendingRecords() async {
     // 优先从本地获取
@@ -12,7 +14,8 @@ class GameRecordRepository {
     if (localRecords.isNotEmpty) {
       return localRecords
           .map((record) => GameRecordEntity.fromLocal(record))
-          .toList();
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
 
     // 本地无数据从远程获取
@@ -20,7 +23,8 @@ class GameRecordRepository {
     final records =
         remoteRecords
             .map((record) => GameRecordEntity.fromRemote(record))
-            .toList();
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     // 将远程数据转换为本地数据库格式并缓存
     await _db.insertGameRecords(
@@ -52,5 +56,16 @@ class GameRecordRepository {
     } catch (e) {
       throw Exception('Failed to insert game record: $e');
     }
+  }
+
+  Future<bool> deleteRecord(int recordId) async {
+    await _db.deleteGameRecord(recordId);
+    _gameRecordService.deleteRecord(recordId);
+    return true;
+  }
+
+  Future<void> settleAllPendingRecords() async {
+    await _db.settleAllPendingRecords();
+    _gameRecordService.settleAllPendingRecords();
   }
 }

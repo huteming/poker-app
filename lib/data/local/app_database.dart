@@ -174,6 +174,25 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
   }
+
+  // 结算所有未结算的游戏记录
+  Future<void> settleAllPendingRecords() async {
+    final pendingRecords = await getPendingGameRecords();
+    if (pendingRecords.isEmpty) return;
+
+    await batch((batch) {
+      for (final record in pendingRecords) {
+        batch.update(
+          gameRecords,
+          GameRecordsCompanion(
+            settlementStatus: const Value('SETTLED'),
+            updatedAt: Value(DateTime.now()),
+          ),
+          where: (tbl) => tbl.id.equals(record.id),
+        );
+      }
+    });
+  }
 }
 
 // 3. 打开数据库连接

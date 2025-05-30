@@ -44,9 +44,11 @@ class GameRecordService extends ApiClient {
     }
   }
 
-  Future<bool> deleteRecord(int recordId) async {
+  Future<Map<String, dynamic>> deleteRecord(int recordId) async {
     try {
-      final response = await delete('/game-records/$recordId');
+      final response = await delete<Map<String, dynamic>>(
+        '/game-records/$recordId',
+      );
       return response.data;
     } on ApiErrorResponse catch (e) {
       _message.showError('删除记录失败: ${e.message}');
@@ -54,7 +56,7 @@ class GameRecordService extends ApiClient {
     }
   }
 
-  Future<bool> settleAllPendingRecords() async {
+  Future<Map<String, dynamic>> settleAllPendingRecords() async {
     try {
       final response = await patch('/game-records/settle-all');
       return response.data;

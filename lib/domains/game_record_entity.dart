@@ -245,4 +245,22 @@ class GameRecordCreateDto {
     required this.player4_final_score,
     required this.game_result_type,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'player1_id': player1_id,
+      'player2_id': player2_id,
+      'player3_id': player3_id,
+      'player4_id': player4_id,
+      'player1_bomb_score': player1_bomb_score,
+      'player2_bomb_score': player2_bomb_score,
+      'player3_bomb_score': player3_bomb_score,
+      'player4_bomb_score': player4_bomb_score,
+      'player1_final_score': player1_final_score,
+      'player2_final_score': player2_final_score,
+      'player3_final_score': player3_final_score,
+      'player4_final_score': player4_final_score,
+      'game_result_type': game_result_type,
+    };
+  }
 }

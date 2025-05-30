@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:poker/data/local/app_database.dart';
 import 'package:poker/data/repositories/game_record_repository.dart';
 import 'package:poker/domains/game_record_entity.dart';
 import 'package:poker/domains/player_entity.dart';
 
-import 'package:poker/services/game_record_service.dart';
 import 'package:poker/providers/player_provider.dart';
 
 import 'package:poker/screens/game_detail_page/game_detail_page.dart';
@@ -15,6 +13,7 @@ import 'widgets/score_page_loading.dart';
 import 'widgets/score_table_header.dart';
 import 'widgets/score_table_row.dart';
 import 'widgets/score_page_empty.dart';
+import 'helpers.dart';
 
 class ScorePage extends StatefulWidget {
   const ScorePage({super.key});
@@ -25,7 +24,6 @@ class ScorePage extends StatefulWidget {
 
 class _ScorePageState extends State<ScorePage> {
   final PlayerProvider _playerProvider = PlayerProvider();
-  final GameRecordService _gameRecordService = GameRecordService();
   final GameRecordRepository _gameRecordRepository = GameRecordRepository();
 
   List<PlayerEntity> gamingPlayers = [];
@@ -109,12 +107,11 @@ class _ScorePageState extends State<ScorePage> {
       _isRefreshing = true;
     });
 
-    await _gameRecordService.settleAllPendingRecords();
-
-    await _loadGameRecords();
+    await _gameRecordRepository.settleAllPendingRecords();
 
     setState(() {
       _isRefreshing = false;
+      records = [];
     });
 
     if (mounted) {
@@ -273,15 +270,37 @@ class _ScorePageState extends State<ScorePage> {
                       padding: EdgeInsets.zero,
                       itemCount: records.length,
                       itemBuilder: (context, index) {
-                        return ScoreTableRow(
-                          players: gamingPlayers,
-                          record: records[index],
-                          rowIndex: index,
-                          onTap:
-                              () => _navigateToGameDetail(
-                                context,
-                                records[index],
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: kScoreTableLeftTimeWidth,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  '${records[index].createdAt.hour.toString().padLeft(2, '0')}:${records[index].createdAt.minute.toString().padLeft(2, '0')}',
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
                               ),
+                            ),
+                            Expanded(
+                              child: ScoreTableRow(
+                                players: gamingPlayers,
+                                record: records[index],
+                                rowIndex: index,
+                                onTap:
+                                    () => _navigateToGameDetail(
+                                      context,
+                                      records[index],
+                                    ),
+                              ),
+                            ),
+                          ],
                         );
                       },
                     ),

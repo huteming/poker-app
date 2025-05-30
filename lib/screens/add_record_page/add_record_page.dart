@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:poker/data/repositories/game_record_repository.dart';
+import 'package:poker/domains/game_record_entity.dart';
 import 'package:poker/domains/player_entity.dart';
 
 import 'widgets/game_result_selector.dart';
@@ -7,7 +9,6 @@ import 'widgets/player_selector.dart';
 import 'widgets/bomb_score_selector.dart';
 
 import '../../utils/score_calculator.dart';
-import '../../services/game_record_service.dart';
 
 class AddRecordPage extends StatefulWidget {
   final List<PlayerEntity> gamingPlayers;
@@ -19,7 +20,8 @@ class AddRecordPage extends StatefulWidget {
 }
 
 class _AddRecordPageState extends State<AddRecordPage> {
-  final GameRecordService _gameRecordService = GameRecordService();
+  final GameRecordRepository _gameRecordRepository = GameRecordRepository();
+
   final Logger log = Logger('AddRecordPage');
 
   List<int> selectedPlayerIds = [];
@@ -48,10 +50,6 @@ class _AddRecordPageState extends State<AddRecordPage> {
   }
 
   Future<void> _onSubmit() async {
-    if (selectedPlayerIds.length != 4) {
-      return;
-    }
-
     try {
       setState(() {
         _isSubmitting = true;
@@ -63,11 +61,22 @@ class _AddRecordPageState extends State<AddRecordPage> {
         bombScores,
       );
 
-      final newRecord = await _gameRecordService.insertRecord(
-        playerIds: selectedPlayerIds,
-        bombScores: bombScores,
-        finalScores: finalScores,
-        gameResultType: gameResultType,
+      final newRecord = await _gameRecordRepository.insertRecord(
+        GameRecordEntity.create(
+          player1Id: selectedPlayerIds[0],
+          player2Id: selectedPlayerIds[1],
+          player3Id: selectedPlayerIds[2],
+          player4Id: selectedPlayerIds[3],
+          player1BombScore: bombScores[selectedPlayerIds[0]] ?? 4,
+          player2BombScore: bombScores[selectedPlayerIds[1]] ?? 4,
+          player3BombScore: bombScores[selectedPlayerIds[2]] ?? 4,
+          player4BombScore: bombScores[selectedPlayerIds[3]] ?? 4,
+          player1FinalScore: finalScores[0],
+          player2FinalScore: finalScores[1],
+          player3FinalScore: finalScores[2],
+          player4FinalScore: finalScores[3],
+          gameResultType: gameResultType,
+        ),
       );
 
       if (mounted) {

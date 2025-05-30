@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:poker/domains/game_record_entity.dart';
 import 'package:poker/domains/player_entity.dart';
+import '../helpers.dart';
 
 class ScoreTableHeader extends StatelessWidget {
   final List<PlayerEntity> players;
@@ -45,46 +46,48 @@ class ScoreTableHeader extends StatelessWidget {
         border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
       child: Row(
-        children:
-            players.map((player) {
-              final stat = calcPlayerStat(player);
+        children: [
+          const SizedBox(width: kScoreTableLeftTimeWidth),
+          ...players.map((player) {
+            final stat = calcPlayerStat(player);
 
-              return Expanded(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.amber,
-                      child: Text(
-                        player.name,
-                        style: const TextStyle(
-                          color: Colors.black87,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${stat['totalScore']}',
-                      style: TextStyle(
-                        color:
-                            stat['totalScore'] >= 0 ? Colors.green : Colors.red,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      stat['winRate'],
+            return Expanded(
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.amber,
+                    child: Text(
+                      player.name,
                       style: const TextStyle(
-                        color: Colors.purple,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                        fontSize: 16,
                       ),
                     ),
-                  ],
-                ),
-              );
-            }).toList(),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${stat['totalScore']}',
+                    style: TextStyle(
+                      color:
+                          stat['totalScore'] >= 0 ? Colors.green : Colors.red,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    stat['winRate'],
+                    style: const TextStyle(
+                      color: Colors.purple,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
       ),
     );
   }
