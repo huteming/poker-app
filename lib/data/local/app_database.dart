@@ -1,8 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
+
+// 条件导入，根据平台选择不同的实现
+import 'database_web.dart' if (dart.library.io) 'database_native.dart';
 
 part 'app_database.g.dart';
 
@@ -197,9 +196,5 @@ class AppDatabase extends _$AppDatabase {
 
 // 3. 打开数据库连接
 LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'app.db'));
-    return NativeDatabase(file);
-  });
+  return createDriftDatabase();
 }
