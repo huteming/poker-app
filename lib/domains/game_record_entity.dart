@@ -207,7 +207,8 @@ class GameRecordEntity {
   }
 
   // 获取玩家胜利状态
-  int isWin(int playerId) {
+  int isWinner(int playerId) {
+    if (gameResultType == 'STALEMATE') return 0;
     if (playerId == player1Id) return 1;
     if (playerId == player2Id) return 1;
     if (playerId == player3Id) return -1;

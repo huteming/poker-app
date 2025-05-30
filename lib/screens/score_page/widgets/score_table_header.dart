@@ -20,9 +20,9 @@ class ScoreTableHeader extends StatelessWidget {
 
     for (var record in records) {
       totalScore += record.getPlayerScore(player.id);
-      if (record.isWin(player.id) == 1) {
+      if (record.isWinner(player.id) == 1) {
         winCount++;
-      } else if (record.isWin(player.id) == -1) {
+      } else if (record.isWinner(player.id) == -1) {
         loseCount++;
       }
     }
